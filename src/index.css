@@ -1,0 +1,164 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-serif: 'Instrument Serif', Georgia, serif;
+    --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  /* Preset suites for dynamic font experience */
+  [data-font-preset="editorial"], :root:not([data-font-preset]) {
+    --font-display: 'Instrument Serif', Georgia, serif;
+    --font-serif: 'Instrument Serif', Georgia, serif;
+    --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  [data-font-preset="haute-modern"] {
+    --font-display: 'Outfit', system-ui, -apple-system, sans-serif;
+    --font-serif: 'Instrument Serif', Georgia, serif;
+    --font-heading: 'Outfit', system-ui, -apple-system, sans-serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  [data-font-preset="imperial"] {
+    --font-display: 'Cormorant Garamond', Georgia, serif;
+    --font-serif: 'Cormorant Garamond', Georgia, serif;
+    --font-heading: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  [data-font-preset="avant-garde"] {
+    --font-display: 'Syne', system-ui, -apple-system, sans-serif;
+    --font-serif: 'Instrument Serif', Georgia, serif;
+    --font-heading: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    --font-body: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: #070A12;
+    color: #F1F5F9;
+  }
+
+  h1, h2, .font-display {
+    font-family: var(--font-display);
+    letter-spacing: -0.015em;
+  }
+
+  /* When using Instrument Serif, default weight is clean regular */
+  [data-font-preset="editorial"] h1,
+  [data-font-preset="editorial"] h2,
+  [data-font-preset="editorial"] .font-display,
+  :root:not([data-font-preset]) h1,
+  :root:not([data-font-preset]) h2,
+  :root:not([data-font-preset]) .font-display {
+    font-weight: 400;
+  }
+
+  /* When using Haute Modern, headings have impactful presence */
+  [data-font-preset="haute-modern"] h1,
+  [data-font-preset="haute-modern"] h2,
+  [data-font-preset="haute-modern"] .font-display {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  /* Imperial uses elegant medium weight */
+  [data-font-preset="imperial"] h1,
+  [data-font-preset="imperial"] h2,
+  [data-font-preset="imperial"] .font-display {
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  /* Avant-Garde uses bold expressive weight */
+  [data-font-preset="avant-garde"] h1,
+  [data-font-preset="avant-garde"] h2,
+  [data-font-preset="avant-garde"] .font-display {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  h3, h4, h5, h6, .font-heading {
+    font-family: var(--font-heading);
+    letter-spacing: -0.01em;
+  }
+
+  .font-serif {
+    font-family: var(--font-serif);
+  }
+
+  .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Custom blueprint & technical grid backgrounds */
+.bg-blueprint-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(25, 211, 230, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(25, 211, 230, 0.05) 1px, transparent 1px);
+}
+
+.bg-blueprint-grid-dense {
+  background-size: 20px 20px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.bg-perspective-grid {
+  background-image: 
+    linear-gradient(to right, rgba(25, 211, 230, 0.15) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(25, 211, 230, 0.15) 1px, transparent 1px);
+  transform: perspective(600px) rotateX(60deg);
+  transform-origin: bottom center;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #070A12;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+/* Noise overlay utility */
+.technical-noise {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Glow effects */
+.glow-coral {
+  box-shadow: 0 0 40px -10px rgba(255, 87, 34, 0.35);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 40px -10px rgba(25, 211, 230, 0.3);
+}
+
+.glow-blue {
+  box-shadow: 0 0 40px -10px rgba(37, 99, 235, 0.3);
+}
+
