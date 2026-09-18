@@ -3,8 +3,8 @@ import { CapabilityItem, PillarItem, ProcessStage, TechZone, ClientProfile, Prin
 export const NAV_LINKS = [
   { label: 'Home', href: '#hero' },
   { label: 'Services', href: '#capabilities' },
+  { label: 'Work', href: '#ashtonava' },
   { label: 'Process', href: '#process' },
-  { label: 'Work', href: '#transformation' },
   { label: 'About', href: '#standard' },
   { label: 'Contact', href: '#contact' },
 ];
@@ -266,7 +266,7 @@ export const CLIENT_PROFILES: ClientProfile[] = [
     headline: 'Eliminate Operational Bottlenecks',
     subheadline: 'Replace fragmented tools with custom systems built explicitly around your business',
     description: 'Mid-sized businesses run on custom processes. We replace chaotic spreadsheets and 12 separate SaaS subscriptions with one unified operating system.',
-    challenges: ['Critical numbers trapped in 50 disconnected spreadsheets', 'Manual data copying causing expensive clerical mistakes', 'Subscription bloat costing $5,000+/month for unused SaaS features'],
+    challenges: ['Critical numbers trapped in 50 disconnected spreadsheets', 'Manual data copying causing expensive clerical mistakes', 'Subscription bloat and fragmented licensing for unused SaaS features'],
     solutions: ['Single pane of glass unifying all team workflows', 'Automated data pipes ending manual copy-pasting', 'Drastic operating cost reduction and zero license fee penalties'],
     typicalStack: 'Custom ERP/CRM, Node.js microservices, PostgreSQL, Redis, Retool/Tailored UI'
   },
@@ -348,7 +348,7 @@ export const TESTIMONIALS = [
     author: "Marcus Vance",
     role: "Founder & Managing Director",
     company: "Vance Logistics Global",
-    metrics: "$68,000 annual SaaS license savings"
+    metrics: "72% reduction in recurring SaaS overhead"
   },
   {
     quote: "Vantixio transformed our operations completely. Manual reconciliation between clinic coordinators and billing that took 4 hours a day now happens instantly in the background.",

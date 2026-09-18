@@ -162,3 +162,33 @@
   box-shadow: 0 0 40px -10px rgba(37, 99, 235, 0.3);
 }
 
+/* Floating interface system */
+.floating-layer {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+.floating-card {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease;
+}
+
+.floating-card:hover {
+  transform: translateY(-3px) translateZ(10px);
+}
+
+@keyframes ambient-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-ambient-float {
+  animation: ambient-float 8s ease-in-out infinite;
+}
+

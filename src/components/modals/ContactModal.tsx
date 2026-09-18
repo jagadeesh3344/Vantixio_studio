@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Send, CheckCircle2, Shield, Calendar, Terminal } from 'lucide-react';
+import { X, Send, CheckCircle2, Shield, Calendar, Terminal, Phone, Building2, User } from 'lucide-react';
 
 interface ContactModalProps {
   isOpen: boolean;
@@ -11,7 +11,11 @@ interface ContactModalProps {
 export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, prefillCategory }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [company, setCompany] = useState('');
+  const [projectType, setProjectType] = useState('Web Platform');
+  const [meetingDate, setMeetingDate] = useState('');
+  const [meetingTime, setMeetingTime] = useState('10:00 AM EST');
   const [notes, setNotes] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
@@ -30,12 +34,12 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, pre
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md overflow-y-auto">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-xl bg-[#0A0F1E] border border-cyan-500/40 rounded-2xl p-6 sm:p-8 shadow-2xl overflow-hidden"
+          className="relative w-full max-w-xl bg-[#0A0F1E] border border-cyan-500/40 rounded-2xl p-6 sm:p-8 shadow-2xl my-8"
         >
           {/* Close button */}
           <button
@@ -51,9 +55,9 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, pre
               <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h3 className="text-2xl font-display font-bold text-white">Discovery Call Requested</h3>
+              <h3 className="text-2xl font-display font-bold text-white">Discovery Call Scheduled</h3>
               <p className="text-sm text-slate-300 max-w-md mx-auto">
-                Thank you, {name || 'Partner'}. A senior technical director from Vantixio will email you at <span className="text-cyan-300 font-mono">{email}</span> within 24 hours with calendar availability and mutual NDA documentation.
+                Thank you, {name || 'Partner'}. A senior technical director from Vantixio will email you at <span className="text-cyan-300 font-mono">{email}</span> to confirm your session on <span className="text-white font-bold">{meetingDate || 'upcoming week'} at {meetingTime}</span> along with mutual NDA documentation.
               </p>
               <button
                 onClick={() => {
@@ -69,7 +73,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, pre
             <>
               <div className="text-xs font-mono text-[#FF5722] uppercase tracking-widest mb-1 flex items-center space-x-1.5">
                 <Calendar className="w-3.5 h-3.5" />
-                <span>DIRECT TECHNICAL INQUIRY</span>
+                <span>DIRECT TECHNICAL INQUIRY & BOOKING</span>
               </div>
               <h3 className="text-2xl font-display font-bold text-white mb-2">
                 Let's Build It
@@ -81,7 +85,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, pre
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-mono text-slate-300 uppercase mb-1">Your Name</label>
+                    <label className="block text-xs font-mono text-slate-300 uppercase mb-1">Your Name *</label>
                     <input
                       type="text"
                       required
@@ -92,7 +96,7 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, pre
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-mono text-slate-300 uppercase mb-1">Work Email</label>
+                    <label className="block text-xs font-mono text-slate-300 uppercase mb-1">Work Email *</label>
                     <input
                       type="email"
                       required
@@ -104,27 +108,82 @@ export const ContactModal: React.FC<ContactModalProps> = ({ isOpen, onClose, pre
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-mono text-slate-300 uppercase mb-1">Company / Organization</label>
-                  <input
-                    type="text"
-                    required
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    placeholder="Acme Operations Corp"
-                    className="w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-slate-300 uppercase mb-1">Company / Organization *</label>
+                    <input
+                      type="text"
+                      required
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
+                      placeholder="Acme Operations Corp"
+                      className="w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-slate-300 uppercase mb-1">Phone Number</label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+1 (555) 019-2834"
+                      className="w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono text-slate-300 uppercase mb-1">What challenge would you like custom software to solve?</label>
+                  <label className="block text-xs font-mono text-slate-300 uppercase mb-1">What do you want to build?</label>
+                  <select
+                    value={projectType}
+                    onChange={(e) => setProjectType(e.target.value)}
+                    className="w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"
+                  >
+                    <option value="Web Platform">Custom Web Platform</option>
+                    <option value="Mobile App">Mobile Product (iOS & Android)</option>
+                    <option value="AI Copilot">AI Copilot / Agent System</option>
+                    <option value="ERP & Ops">Core Business Operations OS</option>
+                    <option value="API Sync">Cloud Architecture & Integrations</option>
+                    <option value="Bespoke Tool">Other Bespoke Software</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-slate-300 uppercase mb-1">Project description / Challenge</label>
                   <textarea
-                    rows={3}
+                    rows={2}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Outline your existing friction or what product you want to build..."
                     className="w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                  <div>
+                    <label className="block text-xs font-mono text-slate-300 uppercase mb-1">Meeting Date</label>
+                    <input
+                      type="date"
+                      value={meetingDate}
+                      onChange={(e) => setMeetingDate(e.target.value)}
+                      className="w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-slate-300 uppercase mb-1">Meeting Time</label>
+                    <select
+                      value={meetingTime}
+                      onChange={(e) => setMeetingTime(e.target.value)}
+                      className="w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400"
+                    >
+                      <option value="09:00 AM EST">09:00 AM EST</option>
+                      <option value="10:00 AM EST">10:00 AM EST</option>
+                      <option value="11:30 AM EST">11:30 AM EST</option>
+                      <option value="01:00 PM EST">01:00 PM EST</option>
+                      <option value="02:30 PM EST">02:30 PM EST</option>
+                      <option value="04:00 PM EST">04:00 PM EST</option>
+                    </select>
+                  </div>
                 </div>
 
                 <div className="p-3 rounded-lg bg-slate-900/60 border border-slate-800 flex items-center space-x-2 text-[11px] font-mono text-slate-400">

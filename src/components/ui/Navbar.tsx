@@ -19,13 +19,17 @@ export const Navbar: React.FC<NavbarProps> = ({ blueprintMode, onToggleBlueprint
     const handleScroll = () => {
       setScrolled(window.scrollY > 40);
 
-      const sections = ['hero', 'problem', 'capabilities', 'standard', 'process', 'transformation', 'technology', 'who-we-build-for', 'why-vantixio', 'contact'];
+      const sections = ['hero', 'problem', 'capabilities', 'ashtonava', 'yesdhobi', 'standard', 'process', 'transformation', 'technology', 'who-we-build-for', 'why-vantixio', 'contact'];
       for (const sectionId of sections) {
         const el = document.getElementById(sectionId);
         if (el) {
           const rect = el.getBoundingClientRect();
-          if (rect.top <= 200 && rect.bottom >= 200) {
-            setActiveSection(sectionId);
+          if (rect.top <= 250 && rect.bottom >= 200) {
+            if (sectionId === 'yesdhobi') {
+              setActiveSection('ashtonava');
+            } else {
+              setActiveSection(sectionId);
+            }
             break;
           }
         }

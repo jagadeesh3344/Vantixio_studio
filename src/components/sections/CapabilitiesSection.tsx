@@ -7,9 +7,13 @@ import { CapabilityItem } from '../../types';
 
 interface CapabilitiesSectionProps {
   onOpenContact: (prefillCategory?: string) => void;
+  onHoverCapability?: (id: string | null) => void;
 }
 
-export const CapabilitiesSection: React.FC<CapabilitiesSectionProps> = ({ onOpenContact }) => {
+export const CapabilitiesSection: React.FC<CapabilitiesSectionProps> = ({ 
+  onOpenContact,
+  onHoverCapability 
+}) => {
   const [selectedCapability, setSelectedCapability] = useState<CapabilityItem>(CAPABILITIES[0]);
   const [activeModalCapability, setActiveModalCapability] = useState<CapabilityItem | null>(null);
 
@@ -102,6 +106,9 @@ export const CapabilitiesSection: React.FC<CapabilitiesSectionProps> = ({ onOpen
               <div
                 key={cap.id}
                 onClick={() => setSelectedCapability(cap)}
+                onMouseEnter={() => onHoverCapability?.(cap.id)}
+                onMouseLeave={() => onHoverCapability?.(null)}
+                data-cursor="pointer"
                 className={`group relative rounded-2xl p-6 sm:p-7 transition-all duration-300 cursor-pointer flex flex-col justify-between border ${
                   isSelected
                     ? 'bg-[#0E1628] border-cyan-400/80 shadow-xl shadow-cyan-950/40 ring-1 ring-cyan-400/50'
