@@ -51,30 +51,35 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({
               <span>CHAPTER 08 // CONVERGENCE</span>
             </div>
 
-            <h2 className="text-4xl sm:text-5xl font-display text-white tracking-tight leading-[1.08]">
-              Ready to Build <br />
-              <span className="font-serif italic font-normal text-slate-100">Something Made</span> <br />
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-white tracking-tight leading-[1.08]">
+              What would you build <br />
+              <span className="font-serif italic font-normal text-slate-100">if software had</span> <br />
               <span className="text-[#FF5722] relative inline-block font-display">
-                Just for You?
+                no limits?
                 <span className="absolute -bottom-1 left-0 right-0 h-1.5 bg-[#FF5722]/40 rounded-full" />
               </span>
             </h2>
 
-            <p className="mt-6 text-lg sm:text-xl text-slate-300 font-heading font-medium">
+            <p className="mt-6 text-xl sm:text-2xl text-white font-heading font-semibold">
               “You bring the problem. We build the answer.”
             </p>
 
-            <p className="mt-2 text-sm text-slate-400 max-w-md leading-relaxed">
-              No rigid templates. No forced workflows. Schedule a technical architecture session with our engineering directors. All systems converge here.
+            <div className="mt-4 space-y-1 text-sm font-mono text-cyan-300/90">
+              <div>Not a template.</div>
+              <div>Not a compromise.</div>
+              <div>Not software you have to adapt yourself to.</div>
+            </div>
+
+            <p className="mt-4 text-sm text-slate-300 max-w-md leading-relaxed">
+              Tell us what your business needs. We'll figure out what the software should be.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <button
                 onClick={onOpenContactModal}
-                className="inline-flex items-center space-x-3 px-7 py-3.5 rounded-full bg-[#FF5722] hover:bg-[#E64A19] text-white font-semibold text-xs tracking-wider uppercase shadow-xl shadow-orange-600/30 hover:scale-105 active:scale-95 transition-all"
+                className="inline-flex items-center space-x-3 px-8 py-4 rounded-full bg-[#FF5722] hover:bg-[#E64A19] text-white font-bold text-xs tracking-widest uppercase shadow-xl shadow-orange-600/30 hover:scale-105 active:scale-95 transition-all"
               >
-                <Calendar className="w-4 h-4" />
-                <span>Fast Modal Booking</span>
+                <span>LET'S BUILD IT</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
@@ -98,17 +103,17 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({
 
           {/* Right Column: Full Interactive Scope & Meeting Booking Form */}
           <div className="lg:col-span-7">
-            <div className="rounded-2xl p-6 sm:p-8 bg-[#090F1E]/95 border border-cyan-500/40 backdrop-blur-xl shadow-2xl shadow-black/80 relative">
+            <div className="p-6 sm:p-8 border border-cyan-500/30 relative">
               <div className="text-xs font-mono text-cyan-400 uppercase tracking-widest mb-1 flex items-center justify-between">
                 <span>CONVERGENCE INQUIRY & ARCHITECTURE BOOKING</span>
                 <span className="text-[10px] text-slate-500">SYSTEM v2.5</span>
               </div>
-              <h3 className="text-2xl font-display font-bold text-white mb-6">
+              <h3 className="text-2xl font-display font-bold text-white mb-6 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
                 Define Your Architecture & Meeting
               </h3>
 
               {submitted ? (
-                <div className="p-8 rounded-xl bg-cyan-950/30 border border-cyan-400/50 text-center space-y-4">
+                <div className="p-8 border border-cyan-400/50 text-center space-y-4">
                   <div className="w-14 h-14 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center mx-auto">
                     <CheckCircle2 className="w-8 h-8 text-cyan-400" />
                   </div>
@@ -140,7 +145,7 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           placeholder="Devin Vance"
-                          className="w-full rounded-lg bg-slate-900 border border-slate-800 pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors"
+                          className="w-full rounded-lg bg-black/50 border border-slate-700/60 pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors backdrop-blur-sm"
                         />
                       </div>
                     </div>
@@ -155,7 +160,7 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="devin@enterprise.com"
-                        className="w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors"
+                        className="w-full rounded-lg bg-black/50 border border-slate-700/60 px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors backdrop-blur-sm"
                       />
                     </div>
                   </div>
@@ -173,7 +178,7 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({
                           value={company}
                           onChange={(e) => setCompany(e.target.value)}
                           placeholder="Acme Global Inc"
-                          className="w-full rounded-lg bg-slate-900 border border-slate-800 pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors"
+                          className="w-full rounded-lg bg-black/50 border border-slate-700/60 pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors backdrop-blur-sm"
                         />
                       </div>
                     </div>
@@ -189,7 +194,7 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           placeholder="+1 (555) 019-2834"
-                          className="w-full rounded-lg bg-slate-900 border border-slate-800 pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors"
+                          className="w-full rounded-lg bg-black/50 border border-slate-700/60 pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors backdrop-blur-sm"
                         />
                       </div>
                     </div>
@@ -208,8 +213,8 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({
                           onClick={() => setSelectedType(type)}
                           className={`p-2 rounded-lg border text-xs font-mono text-center transition-all ${
                             selectedType === type
-                              ? 'bg-cyan-950/80 border-cyan-400 text-cyan-200 font-semibold'
-                              : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                              ? 'bg-cyan-950/80 border-cyan-400 text-cyan-200 font-semibold shadow-lg shadow-cyan-950/50'
+                              : 'bg-black/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                           }`}
                         >
                           {type}
@@ -218,7 +223,7 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({
                     </div>
                   </div>
 
-                  {/* Target Timeframe (Preserved from existing) */}
+                  {/* Target Timeframe */}
                   <div>
                     <label className="block text-[11px] font-mono text-slate-300 uppercase mb-2">
                       Target Timeframe
@@ -231,8 +236,8 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({
                           onClick={() => setSelectedTimeline(time)}
                           className={`p-1.5 rounded-lg border text-xs font-mono text-center transition-all ${
                             selectedTimeline === time
-                              ? 'bg-[#FF5722]/20 border-[#FF5722] text-orange-200 font-semibold'
-                              : 'bg-slate-900/60 border-slate-800 text-slate-400 hover:border-slate-700'
+                              ? 'bg-[#FF5722]/25 border-[#FF5722] text-orange-200 font-semibold'
+                              : 'bg-black/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
                           }`}
                         >
                           {time}
@@ -251,8 +256,8 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({
                       required
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Describe what your custom software needs to accomplish, your current friction, or architecture vision..."
-                      className="w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors"
+                      placeholder="Outline current friction, key workflows, or your target technical specs..."
+                      className="w-full rounded-lg bg-black/50 border border-slate-700/60 p-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors backdrop-blur-sm"
                     />
                   </div>
 

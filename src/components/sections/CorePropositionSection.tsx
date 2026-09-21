@@ -1,12 +1,9 @@
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { Check, X, ArrowRight, Cog, Layers, Sparkles } from 'lucide-react';
+import React from 'react';
+import { Check, X } from 'lucide-react';
 import { SectionHeader } from '../ui/SectionHeader';
 import { ComparisonCube } from '../3d/ComparisonCube';
 
 export const CorePropositionSection: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'comparison' | 'gear-mesh'>('comparison');
-
   return (
     <section id="problem" className="relative py-20 md:py-32 border-t border-slate-800/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -15,23 +12,21 @@ export const CorePropositionSection: React.FC = () => {
         <SectionHeader
           number="01"
           category="THE CORE PROPOSITION"
-          title="Most software forces you to adapt."
+          title="Most Software Forces You to Adapt."
+          titleAccent="Vantixio Flips the Model."
           subtitle="There is no standard business. So there should be no standard software."
-          titleAccent="Vantixio flips the model."
         />
 
-        {/* The Dual Column + Center 3D Isometric Visual Layout (matching image.png) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        {/* The Dual Column + Center 3D Isometric Visual Layout (Floating spatial layout) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
           {/* Left Column: Traditional SaaS & Templates */}
-          <div className="lg:col-span-4 rounded-2xl p-6 sm:p-8 bg-[#0C1220]/80 border border-rose-900/30 backdrop-blur-md relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-rose-500/50 to-transparent" />
-            
+          <div className="lg:col-span-4 atmospheric-clear-soft rounded-2xl border-l-2 border-rose-500/40 pl-6 sm:pl-8 py-4 relative">
             <div className="text-[11px] font-mono tracking-widest text-rose-400 uppercase font-semibold mb-2">
               TRADITIONAL SAAS & TEMPLATES
             </div>
             
-            <h3 className="text-xl sm:text-2xl font-display font-bold text-white mb-2">
+            <h3 className="text-xl sm:text-2xl font-display font-bold text-white mb-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
               “Here’s how our product works.”
             </h3>
             
@@ -41,17 +36,17 @@ export const CorePropositionSection: React.FC = () => {
 
             <ul className="space-y-4">
               {[
-                { title: 'Rigid templates & forced workflows', desc: 'Teams waste hours adapting to unchangeable UI paradigms.' },
-                { title: 'Disconnected tools & workaround spreadsheets', desc: 'Spreadsheet duct-tape and lost records across apps.' },
-                { title: 'Pay for features you never use', desc: 'Paying enterprise seat licenses for 80% unused SaaS bloat.' },
-                { title: 'Limits scalability when you need more', desc: 'Hard API limits and vendor lock-in choking growth.' },
+                { title: 'Forces your business to bend workflows', desc: 'Conforming unique business processes into rigid pre-made templates.' },
+                { title: 'Creates friction & workaround spreadsheets', desc: 'Disconnected tools and spreadsheet workarounds to patch missing logic.' },
+                { title: 'Charges for features you may never use', desc: 'Paying subscription seat costs for bloated, unused capabilities.' },
+                { title: 'Limits scalability when logic demands more', desc: 'Hard constraints and vendor walls when unique operations need to scale.' },
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start space-x-3">
                   <div className="w-5 h-5 rounded-full bg-rose-950/80 border border-rose-600/40 flex items-center justify-center flex-shrink-0 mt-0.5 text-rose-400">
                     <X className="w-3 h-3 stroke-[2.5]" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-slate-200">{item.title}</div>
+                    <div className="text-sm font-semibold text-slate-200 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">{item.title}</div>
                     <div className="text-xs text-slate-400 mt-0.5">{item.desc}</div>
                   </div>
                 </li>
@@ -65,34 +60,32 @@ export const CorePropositionSection: React.FC = () => {
           </div>
 
           {/* Right Column: The Vantixio Model */}
-          <div className="lg:col-span-4 rounded-2xl p-6 sm:p-8 bg-[#0C1220]/80 border border-cyan-500/30 backdrop-blur-md relative overflow-hidden shadow-xl shadow-cyan-950/20">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-cyan-400 to-[#FF5722]" />
-
+          <div className="lg:col-span-4 atmospheric-clear-soft rounded-2xl border-l-2 border-cyan-500/50 pl-6 sm:pl-8 py-4 relative">
             <div className="text-[11px] font-mono tracking-widest text-cyan-400 uppercase font-semibold mb-2">
               THE VANTIXIO MODEL
             </div>
 
-            <h3 className="text-xl sm:text-2xl font-display font-bold text-white mb-2">
-              “We build software around you.”
+            <h3 className="text-xl sm:text-2xl font-display font-bold text-white mb-2 drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+              “Tell us how you want it to work.”
             </h3>
 
             <p className="text-xs sm:text-sm text-slate-400 mb-6 font-mono">
-              Engineered from the ground up around your exact people, workflows, and habits.
+              Engineered around your real people, daily workflows, and exact habits.
             </p>
 
             <ul className="space-y-4">
               {[
-                { title: 'Engineered around your real workflows', desc: 'Every button, transition, and status reflects how your team works.' },
-                { title: 'Consolidates fragmented tools into one platform', desc: 'One cohesive operating system replacing 8 disparate subscriptions.' },
-                { title: '100% custom logic, automation & branding', desc: 'Proprietary business logic and native company visual identity.' },
-                { title: 'Built to evolve as your business grows', desc: 'Zero vendor lock-in; code that scales with your ambitions.' },
+                { title: 'Engineered around your real people', desc: 'Daily workflows and exact operational habits modeled directly in software.' },
+                { title: 'Consolidates operational friction into one platform', desc: 'Unified single-pane operating system removing manual handoffs.' },
+                { title: '100% custom business logic & branding', desc: 'Automated rules, native design, and proprietary logic tailored to you.' },
+                { title: 'Built to evolve continuously', desc: 'Scales without limits as your commercial ambitions expand.' },
               ].map((item, idx) => (
                 <li key={idx} className="flex items-start space-x-3">
                   <div className="w-5 h-5 rounded-full bg-cyan-950/80 border border-cyan-400/50 flex items-center justify-center flex-shrink-0 mt-0.5 text-cyan-300">
                     <Check className="w-3 h-3 stroke-[2.5]" />
                   </div>
                   <div>
-                    <div className="text-sm font-semibold text-white">{item.title}</div>
+                    <div className="text-sm font-semibold text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">{item.title}</div>
                     <div className="text-xs text-slate-400 mt-0.5">{item.desc}</div>
                   </div>
                 </li>
@@ -102,15 +95,12 @@ export const CorePropositionSection: React.FC = () => {
 
         </div>
 
-        {/* Blueprint Mathematical Footnote */}
-        <div className="mt-12 p-4 rounded-xl bg-slate-900/40 border border-slate-800/80 flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-slate-400">
+        {/* Core Axiom Footnote */}
+        <div className="mt-12 pt-6 border-t border-slate-800/50 flex flex-col sm:flex-row items-center justify-between text-xs font-mono text-slate-400">
           <div className="flex items-center space-x-2">
-            <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
+            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
             <span className="text-cyan-300 font-semibold">CORE AXIOM:</span>
             <span>Software should conform to the business, not the business to the software.</span>
-          </div>
-          <div className="text-[11px] text-slate-500 mt-2 sm:mt-0">
-            CALCULATED FRICTION REDUCTION // 84.6%
           </div>
         </div>
 

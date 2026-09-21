@@ -192,3 +192,21 @@
   animation: ambient-float 8s ease-in-out infinite;
 }
 
+/* Atmospheric Clear Zones & Dynamic Readability Layer */
+.atmospheric-clear-zone {
+  background: radial-gradient(ellipse at center, rgba(7, 10, 18, 0.76) 0%, rgba(7, 10, 18, 0.42) 65%, transparent 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.atmospheric-clear-soft {
+  background: radial-gradient(ellipse at center, rgba(7, 10, 18, 0.65) 0%, rgba(7, 10, 18, 0.25) 75%, transparent 100%);
+}
+
+.atmospheric-panel {
+  background: rgba(10, 15, 29, 0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(51, 65, 85, 0.4);
+}
+

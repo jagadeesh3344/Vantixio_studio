@@ -3,16 +3,16 @@ import * as THREE from 'three';
 
 export type WorldSection =
   | 'hero'
-  | 'services'
-  | 'ashtonava'
-  | 'yesdhobi'
-  | 'process'
-  | 'about'
-  | 'contact';
+  | 'problem'
+  | 'capabilities'
+  | 'architecture'
+  | 'work'
+  | 'transformation'
+  | 'convergence';
 
 export interface VantixioWorldProps {
   activeSection?: WorldSection;
-  continuousProgress?: number; // 0.0 (Hero) to 6.0 (Contact)
+  continuousProgress?: number; // 0.0 (Hero) to 6.0 (Convergence)
   sectionProgress?: number;
   globalScrollProgress?: number;
   activeCapability?: string | null;
@@ -20,26 +20,16 @@ export interface VantixioWorldProps {
   reducedMotion?: boolean;
 }
 
-// 7 continuous world color signatures (RGB hex)
+// 7 Continuous World Color Signatures (RGB Hex)
+// 0: Hero, 1: Problem, 2: Capabilities, 3: Architecture, 4: Work, 5: Transformation Morph, 6: Convergence
 const COLOR_STOPS = [
   { primary: 0x19D3E6, secondary: 0xFF5722, fog: 0x070A12 }, // 0: Hero (Cyan + Flame Coral)
-  { primary: 0x06B6D4, secondary: 0x3B82F6, fog: 0x060913 }, // 1: Services (Electric Cyan + Cobalt)
-  { primary: 0xF59E0B, secondary: 0xD97706, fog: 0x09090E }, // 2: Ashtonava (Champagne Gold + Amber) [Work 1]
-  { primary: 0x10B981, secondary: 0x06B6D4, fog: 0x050C16 }, // 3: YesDhobi (Emerald + Cyan) [Work 2]
-  { primary: 0xFF5722, secondary: 0x2563EB, fog: 0x080C18 }, // 4: Process (Flame + Royal Blue)
-  { primary: 0x94A3B8, secondary: 0x38BDF8, fog: 0x050811 }, // 5: About (Slate + Celestial Sky)
-  { primary: 0xFF5722, secondary: 0xF59E0B, fog: 0x080A14 }, // 6: Contact (Coral + Gold Convergence)
-];
-
-// Continuous 3D camera spline positions across the 7-state journey
-const CAMERA_STOPS = [
-  { pos: new THREE.Vector3(0, 0, 9.2), look: new THREE.Vector3(0, 0, 0) },         // 0: Hero
-  { pos: new THREE.Vector3(0.7, -0.25, 7.2), look: new THREE.Vector3(0.2, 0, 0) },  // 1: Services
-  { pos: new THREE.Vector3(-1.0, 0.25, 6.4), look: new THREE.Vector3(-0.2, 0, 0) },// 2: Ashtonava
-  { pos: new THREE.Vector3(0.6, -0.3, 6.8), look: new THREE.Vector3(0.2, 0, 0) },   // 3: YesDhobi
-  { pos: new THREE.Vector3(0, -0.25, 7.2), look: new THREE.Vector3(0, 0, 0) },      // 4: Process
-  { pos: new THREE.Vector3(0.25, 0.08, 8.0), look: new THREE.Vector3(0, 0, 0) },   // 5: About
-  { pos: new THREE.Vector3(0, 0, 7.8), look: new THREE.Vector3(0, 0, 0) },          // 6: Contact
+  { primary: 0xF43F5E, secondary: 0x06B6D4, fog: 0x080A14 }, // 1: Problem (Rose + Cyan)
+  { primary: 0x06B6D4, secondary: 0x3B82F6, fog: 0x060913 }, // 2: Capabilities (Electric Cyan + Cobalt)
+  { primary: 0x06B6D4, secondary: 0x8B5CF6, fog: 0x070A14 }, // 3: Architecture (Cyan + Indigo)
+  { primary: 0xF59E0B, secondary: 0x10B981, fog: 0x080A12 }, // 4: Work (Amber Gold + Emerald)
+  { primary: 0x19D3E6, secondary: 0xFF5722, fog: 0x070A14 }, // 5: Transformation Morph (Electric Cyan + Flame Coral)
+  { primary: 0xFF5722, secondary: 0xF59E0B, fog: 0x080A14 }, // 6: Convergence (Coral + Gold)
 ];
 
 export const VantixioWorld: React.FC<VantixioWorldProps> = ({
@@ -70,12 +60,13 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
     targetMouseX: 0,
     targetMouseY: 0,
     isMobile: false,
+    aspect: 1.0,
   });
 
-  // Synchronize incoming props to animation state
+  // Synchronize incoming props
   useEffect(() => {
     stateRef.current.activeSection = activeSection;
-    stateRef.current.targetProgress = Math.max(0, Math.min(continuousProgress, 7));
+    stateRef.current.targetProgress = Math.max(0, Math.min(continuousProgress, 6));
     stateRef.current.sectionProgress = sectionProgress;
     stateRef.current.globalScrollProgress = globalScrollProgress;
     stateRef.current.activeCapability = activeCapability;
@@ -87,8 +78,13 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
     const container = mountRef.current;
     if (!container) return;
 
-    const isMobile = window.innerWidth < 768;
+    let width = container.clientWidth || window.innerWidth;
+    let height = container.clientHeight || window.innerHeight;
+    const isMobile = width < 768;
+    const aspect = width / height;
+
     stateRef.current.isMobile = isMobile;
+    stateRef.current.aspect = aspect;
 
     let renderer: THREE.WebGLRenderer;
     try {
@@ -102,592 +98,653 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
       return;
     }
 
-    let width = container.clientWidth || window.innerWidth;
-    let height = container.clientHeight || window.innerHeight;
-
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 1.75));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.15;
+    renderer.toneMappingExposure = isMobile ? 1.3 : 1.2;
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(COLOR_STOPS[0].fog, 0.055);
+    scene.fog = new THREE.FogExp2(COLOR_STOPS[0].fog, isMobile ? 0.045 : 0.052);
 
-    const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
-    camera.position.copy(CAMERA_STOPS[0].pos);
+    // Adaptive Camera: wider FOV on mobile so primary objects fill 60-80% of upper visual field
+    const initialFov = isMobile ? (aspect < 0.55 ? 60 : 56) : 48;
+    const camera = new THREE.PerspectiveCamera(initialFov, aspect, 0.1, 100);
+
+    // Dynamic Camera Spline generator tailored for Desktop vs. Dedicated Mobile
+    const getCameraStops = (mobile: boolean, curAspect: number) => {
+      if (mobile) {
+        // MOBILE-FIRST: Closer camera distance (Z closer) and Y elevated so 3D objects occupy
+        // 65-80% of visible upper viewport, floating above headlines with razor-sharp presence.
+        const yOffset = curAspect < 0.55 ? 0.5 : 0.38;
+        const zScale = curAspect < 0.55 ? 0.88 : 0.95;
+        return [
+          { pos: new THREE.Vector3(0, yOffset, 6.4 * zScale), look: new THREE.Vector3(0, yOffset * 0.4, 0) },    // 0: Hero
+          { pos: new THREE.Vector3(0, yOffset, 6.2 * zScale), look: new THREE.Vector3(0, yOffset * 0.3, 0) },    // 1: Problem
+          { pos: new THREE.Vector3(0, yOffset, 5.8 * zScale), look: new THREE.Vector3(0, yOffset * 0.2, 0) },    // 2: Capabilities
+          { pos: new THREE.Vector3(0, yOffset, 5.9 * zScale), look: new THREE.Vector3(0, yOffset * 0.2, 0) },    // 3: Architecture
+          { pos: new THREE.Vector3(0, yOffset, 5.6 * zScale), look: new THREE.Vector3(0, yOffset * 0.1, 0) },    // 4: Work
+          { pos: new THREE.Vector3(0, yOffset * 0.5, 3.8 * zScale), look: new THREE.Vector3(0, 0, 0) },          // 5: Morph (Passing Through)
+          { pos: new THREE.Vector3(0, yOffset, 6.2 * zScale), look: new THREE.Vector3(0, yOffset * 0.3, 0) },    // 6: Convergence
+        ];
+      } else {
+        // DESKTOP: Wide, expansive spatial perspective with 70-80% world presence
+        return [
+          { pos: new THREE.Vector3(0.5, 0, 8.4), look: new THREE.Vector3(0.15, 0, 0) },     // 0: Hero
+          { pos: new THREE.Vector3(0.65, -0.08, 7.8), look: new THREE.Vector3(0.2, 0, 0) }, // 1: Problem
+          { pos: new THREE.Vector3(0.7, -0.1, 7.3), look: new THREE.Vector3(0.25, 0, 0) },   // 2: Capabilities
+          { pos: new THREE.Vector3(-0.4, 0.08, 7.4), look: new THREE.Vector3(-0.15, 0, 0) }, // 3: Architecture
+          { pos: new THREE.Vector3(-0.55, 0.1, 6.8), look: new THREE.Vector3(-0.2, 0, 0) },  // 4: Work
+          { pos: new THREE.Vector3(0, 0, 4.2), look: new THREE.Vector3(0, 0, 0) },           // 5: Morph (Passing Through Gap)
+          { pos: new THREE.Vector3(0, 0, 7.6), look: new THREE.Vector3(0, 0, 0) },           // 6: Convergence
+        ];
+      }
+    };
+
+    let cameraStops = getCameraStops(isMobile, aspect);
+    camera.position.copy(cameraStops[0].pos);
+    camera.lookAt(cameraStops[0].look);
 
     // ==========================================
-    // 1. LIGHTING SYSTEM (Continuously Evolving)
+    // 1. LIGHTING SYSTEM (High-contrast, razor-sharp silhouettes)
     // ==========================================
-    const ambientLight = new THREE.AmbientLight(0x0e172a, 1.8);
+    const ambientLight = new THREE.AmbientLight(0x0e172a, isMobile ? 2.0 : 1.7);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.PointLight(COLOR_STOPS[0].primary, 3.2, 28);
+    const keyLight = new THREE.PointLight(COLOR_STOPS[0].primary, isMobile ? 4.2 : 3.5, 30);
     keyLight.position.set(4, 5, 6);
     scene.add(keyLight);
 
-    const rimLight = new THREE.PointLight(COLOR_STOPS[0].secondary, 2.6, 24);
+    const rimLight = new THREE.PointLight(COLOR_STOPS[0].secondary, isMobile ? 3.4 : 2.8, 26);
     rimLight.position.set(-5, -4, 4);
     scene.add(rimLight);
 
-    const accentLight = new THREE.DirectionalLight(0xffffff, 0.85);
-    accentLight.position.set(0, 8, 2);
-    scene.add(accentLight);
+    const overheadLight = new THREE.DirectionalLight(0xffffff, 0.95);
+    overheadLight.position.set(0, 8, 3);
+    scene.add(overheadLight);
 
     // ==========================================
-    // 2. HERO: TECH MONUMENT (World 0)
+    // 2. WORLD 0: HERO MONUMENT (Large Monumental Craft Sculpture)
     // ==========================================
     const monumentGroup = new THREE.Group();
     scene.add(monumentGroup);
 
-    const outerGeo = new THREE.IcosahedronGeometry(2.0, isMobile ? 0 : 1);
+    // Substantially larger scale for immediate visual impact (Igloo clarity principle)
+    const monumentScale = isMobile ? 1.15 : 1.35;
+    monumentGroup.scale.set(monumentScale, monumentScale, monumentScale);
+
+    const outerGeo = new THREE.IcosahedronGeometry(2.4, isMobile ? 0 : 1);
     const outerMat = new THREE.MeshStandardMaterial({
-      color: 0x121A2A,
-      roughness: 0.25,
-      metalness: 0.9,
+      color: 0x142036,
+      roughness: 0.2,
+      metalness: 0.92,
       wireframe: true,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.65,
     });
     const monumentOuter = new THREE.Mesh(outerGeo, outerMat);
     monumentGroup.add(monumentOuter);
 
-    const innerGeo = new THREE.OctahedronGeometry(1.2, 0);
+    const innerGeo = new THREE.OctahedronGeometry(1.5, 0);
     const innerMat = new THREE.MeshStandardMaterial({
-      color: 0x070B14,
+      color: 0x091122,
       roughness: 0.1,
-      metalness: 0.95,
-      emissive: 0x062235,
-      emissiveIntensity: 0.35,
+      metalness: 0.96,
+      emissive: 0x082B42,
+      emissiveIntensity: 0.45,
     });
     const monumentInner = new THREE.Mesh(innerGeo, innerMat);
     monumentGroup.add(monumentInner);
 
-    const seedGeo = new THREE.SphereGeometry(0.5, 16, 16);
+    const seedGeo = new THREE.SphereGeometry(0.55, 16, 16);
     const seedMat = new THREE.MeshBasicMaterial({
       color: 0xFF5722,
       wireframe: true,
       transparent: true,
-      opacity: 0.75,
+      opacity: 0.85,
     });
     const monumentSeed = new THREE.Mesh(seedGeo, seedMat);
     monumentGroup.add(monumentSeed);
 
-    const ringGeo1 = new THREE.RingGeometry(3.0, 3.03, 64);
+    const ringGeo1 = new THREE.RingGeometry(3.5, 3.54, 64);
     const ringMat1 = new THREE.MeshBasicMaterial({
       color: 0x19D3E6,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.35,
+      opacity: 0.4,
     });
     const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
     ring1.rotation.x = Math.PI / 3;
     monumentGroup.add(ring1);
 
-    const ringGeo2 = new THREE.RingGeometry(3.6, 3.63, 64);
+    const ringGeo2 = new THREE.RingGeometry(4.2, 4.24, 64);
     const ringMat2 = new THREE.MeshBasicMaterial({
       color: 0xFF5722,
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.3,
+      opacity: 0.35,
     });
     const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
-    ring2.rotation.y = Math.PI / 4;
+    ring2.rotation.y = Math.PI / 3.8;
     monumentGroup.add(ring2);
 
     // ==========================================
-    // 3. SERVICES: TECHNOLOGY NETWORK GRID (World 1)
+    // 3. WORLD 1: THE PROBLEM (Large Opposing Monoliths & Dynamic Tension)
     // ==========================================
-    const networkGroup = new THREE.Group();
-    scene.add(networkGroup);
-    networkGroup.position.set(0, 0, -1.5);
+    const problemGroup = new THREE.Group();
+    scene.add(problemGroup);
 
-    const nodeCount = isMobile ? 22 : 36;
-    const nodeGeo = new THREE.SphereGeometry(0.08, 8, 8);
-    const nodeMat = new THREE.MeshBasicMaterial({ color: 0x06B6D4 });
-    const nodeInst = new THREE.InstancedMesh(nodeGeo, nodeMat, nodeCount);
+    const problemScale = isMobile ? 1.05 : 1.25;
+    problemGroup.scale.set(problemScale, problemScale, problemScale);
 
-    const nodePositions: THREE.Vector3[] = [];
-    const dummy = new THREE.Object3D();
-    for (let i = 0; i < nodeCount; i++) {
-      const x = (Math.random() - 0.5) * 14;
-      const y = (Math.random() - 0.5) * 8;
-      const z = (Math.random() - 0.5) * 6 - 1.5;
-      dummy.position.set(x, y, z);
-      dummy.updateMatrix();
-      nodeInst.setMatrixAt(i, dummy.matrix);
-      nodePositions.push(new THREE.Vector3(x, y, z));
-    }
-    nodeInst.instanceMatrix.needsUpdate = true;
-    networkGroup.add(nodeInst);
-
-    const lineIndices: number[] = [];
-    for (let i = 0; i < nodeCount; i++) {
-      for (let j = i + 1; j < nodeCount; j++) {
-        if (nodePositions[i].distanceTo(nodePositions[j]) < 3.2) {
-          lineIndices.push(i, j);
-        }
-      }
-    }
-    const linePositions = new Float32Array(lineIndices.length * 3);
-    for (let i = 0; i < lineIndices.length; i++) {
-      const pos = nodePositions[lineIndices[i]];
-      linePositions[i * 3] = pos.x;
-      linePositions[i * 3 + 1] = pos.y;
-      linePositions[i * 3 + 2] = pos.z;
-    }
-    const lineGeo = new THREE.BufferGeometry();
-    lineGeo.setAttribute('position', new THREE.BufferAttribute(linePositions, 3));
-    const lineMat = new THREE.LineBasicMaterial({
-      color: 0x1E293B,
-      transparent: true,
-      opacity: 0.45,
-    });
-    const networkLines = new THREE.LineSegments(lineGeo, lineMat);
-    networkGroup.add(networkLines);
-
-    // Capability focal holographic preview shape
-    const capabilityFocusGroup = new THREE.Group();
-    networkGroup.add(capabilityFocusGroup);
-    capabilityFocusGroup.position.set(2.8, 0, 1.5);
-    const focusGeo = new THREE.TorusGeometry(0.7, 0.04, 16, 64);
-    const focusMat = new THREE.MeshBasicMaterial({
-      color: 0x19D3E6,
+    const redGeo = new THREE.BoxGeometry(2.2, 2.2, 2.2);
+    const redMat = new THREE.MeshStandardMaterial({
+      color: 0xF43F5E,
+      roughness: 0.35,
+      metalness: 0.8,
+      wireframe: true,
       transparent: true,
       opacity: 0.7,
+    });
+    const redCube = new THREE.Mesh(redGeo, redMat);
+    redCube.position.set(isMobile ? -1.6 : -2.6, 0.4, 0);
+    problemGroup.add(redCube);
+
+    const blueGeo = new THREE.BoxGeometry(2.2, 2.2, 2.2);
+    const blueMat = new THREE.MeshStandardMaterial({
+      color: 0x06B6D4,
+      roughness: 0.15,
+      metalness: 0.9,
       wireframe: true,
+      transparent: true,
+      opacity: 0.7,
+    });
+    const blueCube = new THREE.Mesh(blueGeo, blueMat);
+    blueCube.position.set(isMobile ? 1.6 : 2.6, -0.4, 0);
+    problemGroup.add(blueCube);
+
+    const tensionCurve = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(isMobile ? -1.6 : -2.6, 0.4, 0),
+      new THREE.Vector3(-0.7, 1.4, 0.6),
+      new THREE.Vector3(0.7, -1.4, -0.6),
+      new THREE.Vector3(isMobile ? 1.6 : 2.6, -0.4, 0),
+    ]);
+    const tensionGeo = new THREE.TubeGeometry(tensionCurve, 36, 0.045, 8, false);
+    const tensionMat = new THREE.MeshBasicMaterial({
+      color: 0xFFFFFF,
+      transparent: true,
+      opacity: 0.5,
+    });
+    const tensionMesh = new THREE.Mesh(tensionGeo, tensionMat);
+    problemGroup.add(tensionMesh);
+
+    // ==========================================
+    // 4. WORLD 2: CAPABILITIES (Large Spatial Constellation)
+    // ==========================================
+    const capabilityGroup = new THREE.Group();
+    scene.add(capabilityGroup);
+
+    const capNodes: THREE.Mesh[] = [];
+    const hexRadius = isMobile ? 2.2 : 3.0;
+    for (let i = 0; i < 6; i++) {
+      const angle = (i / 6) * Math.PI * 2;
+      const x = Math.cos(angle) * hexRadius;
+      const y = Math.sin(angle) * hexRadius * 0.75;
+      const nodeGeo = new THREE.OctahedronGeometry(0.5, 0);
+      const nodeMat = new THREE.MeshStandardMaterial({
+        color: 0x06B6D4,
+        roughness: 0.25,
+        metalness: 0.8,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.85,
+      });
+      const nodeMesh = new THREE.Mesh(nodeGeo, nodeMat);
+      nodeMesh.position.set(x, y, 0);
+      capabilityGroup.add(nodeMesh);
+      capNodes.push(nodeMesh);
+    }
+
+    const focusGeo = new THREE.DodecahedronGeometry(1.0, 0);
+    const focusMat = new THREE.MeshStandardMaterial({
+      color: 0x06B6D4,
+      emissive: 0x06B6D4,
+      emissiveIntensity: 0.4,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.75,
     });
     const focusMesh = new THREE.Mesh(focusGeo, focusMat);
-    capabilityFocusGroup.add(focusMesh);
+    capabilityGroup.add(focusMesh);
 
     // ==========================================
-    // 4. ASHTONAVA: LUXURY COMMERCE SHIMMER PLANES (World 2)
+    // 5. WORLD 3: ARCHITECTURE (Colonnade of Pillars)
     // ==========================================
-    const luxuryGroup = new THREE.Group();
-    scene.add(luxuryGroup);
+    const architectureGroup = new THREE.Group();
+    scene.add(architectureGroup);
 
-    const luxuryPlanes: THREE.Mesh[] = [];
-    for (let i = 0; i < 5; i++) {
-      const planeGeo = new THREE.PlaneGeometry(3.5, 4.8);
-      const planeMat = new THREE.MeshStandardMaterial({
-        color: 0x17120D,
-        metalness: 0.85,
-        roughness: 0.2,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.35,
-      });
-      const plane = new THREE.Mesh(planeGeo, planeMat);
-      plane.position.set((i - 2) * 2.2, (i % 2 === 0 ? 0.4 : -0.4), -i * 1.2);
-      plane.rotation.y = 0.25 * (i - 2);
-      luxuryGroup.add(plane);
-      luxuryPlanes.push(plane);
-    }
-
-    // ==========================================
-    // 5. SIGNATURE DIMENSIONAL PASSAGE: BLACK HOLE & GRAVITATIONAL ACCRETION VORTEX (Transition 1 -> 2: INTO WORK)
-    // ==========================================
-    const blackHoleGroup = new THREE.Group();
-    scene.add(blackHoleGroup);
-    blackHoleGroup.position.set(0, 0, 1.0);
-
-    // Dark Event Horizon Sphere (Gravitational Singularity)
-    const horizonGeo = new THREE.SphereGeometry(1.2, 32, 32);
-    const horizonMat = new THREE.MeshBasicMaterial({
-      color: 0x010204,
-    });
-    const eventHorizon = new THREE.Mesh(horizonGeo, horizonMat);
-    blackHoleGroup.add(eventHorizon);
-
-    // Relativistic Lensed Photon Ring (Intense Glowing Rim)
-    const photonRingGeo = new THREE.TorusGeometry(1.28, 0.05, 16, 64);
-    const photonRingMat = new THREE.MeshBasicMaterial({
-      color: 0xF59E0B,
-      transparent: true,
-      opacity: 0.0,
-      blending: THREE.AdditiveBlending,
-    });
-    const photonRing = new THREE.Mesh(photonRingGeo, photonRingMat);
-    photonRing.rotation.x = Math.PI / 2.8;
-    blackHoleGroup.add(photonRing);
-
-    // Tilted Gravitational Accretion Disc Rings
-    const accretionRings: THREE.Mesh[] = [];
-    const ringColors = [0xF59E0B, 0xD97706, 0x06B6D4, 0x19D3E6];
-    for (let i = 0; i < 4; i++) {
-      const aRingGeo = new THREE.RingGeometry(1.5 + i * 0.55, 1.58 + i * 0.55, 64);
-      const aRingMat = new THREE.MeshBasicMaterial({
-        color: ringColors[i % ringColors.length],
-        side: THREE.DoubleSide,
-        transparent: true,
-        opacity: 0.0,
-        blending: THREE.AdditiveBlending,
-      });
-      const aRing = new THREE.Mesh(aRingGeo, aRingMat);
-      aRing.rotation.x = Math.PI / 2.6 + (i * 0.04);
-      blackHoleGroup.add(aRing);
-      accretionRings.push(aRing);
-    }
-
-    // High-speed relativistic warp jet streaks oriented along Z
-    const streakCount = isMobile ? 32 : 72;
-    const streakGeo = new THREE.BufferGeometry();
-    const streakPos = new Float32Array(streakCount * 2 * 3);
-    for (let i = 0; i < streakCount; i++) {
-      const angle = (i / streakCount) * Math.PI * 2;
-      const radius = 1.3 + (Math.random() - 0.5) * 1.6;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      const zStart = (Math.random() - 0.5) * 18;
-      const zLength = 2.8 + Math.random() * 4.5;
-
-      streakPos[i * 6] = x;
-      streakPos[i * 6 + 1] = y;
-      streakPos[i * 6 + 2] = zStart;
-
-      streakPos[i * 6 + 3] = x * 1.2;
-      streakPos[i * 6 + 4] = y * 1.2;
-      streakPos[i * 6 + 5] = zStart - zLength;
-    }
-    streakGeo.setAttribute('position', new THREE.BufferAttribute(streakPos, 3));
-    const streakMat = new THREE.LineBasicMaterial({
-      color: 0xF59E0B,
-      transparent: true,
-      opacity: 0.0,
-      blending: THREE.AdditiveBlending,
-    });
-    const streakLines = new THREE.LineSegments(streakGeo, streakMat);
-    blackHoleGroup.add(streakLines);
-
-    // Accretion particle vortex spiral (particles orbiting the black hole)
-    const vortexParticleCount = isMobile ? 60 : 140;
-    const vortexGeo = new THREE.BufferGeometry();
-    const vortexPositions = new Float32Array(vortexParticleCount * 3);
-    const vortexRadii = new Float32Array(vortexParticleCount);
-    const vortexAngles = new Float32Array(vortexParticleCount);
-    const vortexSpeeds = new Float32Array(vortexParticleCount);
-
-    for (let i = 0; i < vortexParticleCount; i++) {
-      const r = 1.4 + Math.random() * 2.8;
-      const angle = Math.random() * Math.PI * 2;
-      vortexRadii[i] = r;
-      vortexAngles[i] = angle;
-      vortexSpeeds[i] = (0.02 + 0.04 / Math.sqrt(r)); // Keplerian differential rotation
-      vortexPositions[i * 3] = Math.cos(angle) * r;
-      vortexPositions[i * 3 + 1] = Math.sin(angle) * r * 0.45; // Flattened disc
-      vortexPositions[i * 3 + 2] = (Math.random() - 0.5) * 0.4;
-    }
-    vortexGeo.setAttribute('position', new THREE.BufferAttribute(vortexPositions, 3));
-    const vortexMat = new THREE.PointsMaterial({
-      size: isMobile ? 0.045 : 0.065,
-      color: 0xF59E0B,
-      transparent: true,
-      opacity: 0.0,
-      blending: THREE.AdditiveBlending,
-    });
-    const vortexParticles = new THREE.Points(vortexGeo, vortexMat);
-    blackHoleGroup.add(vortexParticles);
-
-    // ==========================================
-    // 6. YESDHOBI: BUSINESS OPERATIONS & LOGISTICS (World 3)
-    // ==========================================
-    const logisticsGroup = new THREE.Group();
-    scene.add(logisticsGroup);
-
-    const stations = [
-      { name: 'Customer', x: -5, y: 1.2 },
-      { name: 'Booking', x: -2.5, y: -0.8 },
-      { name: 'Pickup', x: 0, y: 1.4 },
-      { name: 'Processing', x: 2.5, y: -0.6 },
-      { name: 'Delivery', x: 5, y: 1.0 },
-    ];
-    stations.forEach((st) => {
-      const stGeo = new THREE.CylinderGeometry(0.45, 0.45, 0.12, 24);
-      const stMat = new THREE.MeshStandardMaterial({
-        color: 0x052E2B,
-        emissive: 0x10B981,
-        emissiveIntensity: 0.5,
-        wireframe: true,
-      });
-      const stMesh = new THREE.Mesh(stGeo, stMat);
-      stMesh.position.set(st.x, st.y, -1);
-      stMesh.rotation.x = Math.PI / 4;
-      logisticsGroup.add(stMesh);
-    });
-
-    const curvePoints = stations.map((s) => new THREE.Vector3(s.x, s.y, -1));
-    const logisticsCurve = new THREE.CatmullRomCurve3(curvePoints);
-    const curveGeo = new THREE.TubeGeometry(logisticsCurve, 64, 0.03, 8, false);
-    const curveMat = new THREE.MeshBasicMaterial({ color: 0x10B981, transparent: true, opacity: 0.7 });
-    const curveMesh = new THREE.Mesh(curveGeo, curveMat);
-    logisticsGroup.add(curveMesh);
-
-    // Dynamic moving operational data packet along conveyor
-    const packetGeo = new THREE.SphereGeometry(0.12, 12, 12);
-    const packetMat = new THREE.MeshBasicMaterial({ color: 0x06B6D4 });
-    const packetMesh = new THREE.Mesh(packetGeo, packetMat);
-    logisticsGroup.add(packetMesh);
-
-    // ==========================================
-    // 7. PROCESS: ENGINEERING CONSTRUCTION WORLD (World 4)
-    // ==========================================
-    const processGroup = new THREE.Group();
-    scene.add(processGroup);
-
-    const trussBeams: THREE.Mesh[] = [];
-    for (let i = 0; i < 6; i++) {
-      const beamGeo = new THREE.BoxGeometry(0.12, 4.5, 0.12);
+    const pillarBeams: THREE.Mesh[] = [];
+    const pillarCount = isMobile ? 3 : 5;
+    for (let i = 0; i < pillarCount; i++) {
+      const beamGeo = new THREE.CylinderGeometry(0.14, 0.14, 6.0, 16);
       const beamMat = new THREE.MeshStandardMaterial({
-        color: 0x1E293B,
+        color: 0x06B6D4,
+        roughness: 0.2,
         metalness: 0.85,
-        roughness: 0.3,
-        wireframe: true,
+        transparent: true,
+        opacity: 0.8,
       });
       const beam = new THREE.Mesh(beamGeo, beamMat);
-      beam.position.set((i - 2.5) * 1.8, 0, -i * 0.8);
-      beam.rotation.z = i % 2 === 0 ? 0.3 : -0.3;
-      processGroup.add(beam);
-      trussBeams.push(beam);
+      const spacing = isMobile ? 1.6 : 1.35;
+      const offset = (pillarCount - 1) * 0.5 * spacing;
+      beam.position.set(i * spacing - offset, 0, 0);
+      architectureGroup.add(beam);
+      pillarBeams.push(beam);
     }
 
-    // ==========================================
-    // 9. ABOUT: MINIMAL PURPOSE SCULPTURE (World 6)
-    // ==========================================
-    const aboutGroup = new THREE.Group();
-    scene.add(aboutGroup);
+    const archRingGeo = new THREE.TorusGeometry(3.4, 0.045, 16, 64);
+    const archMat = new THREE.MeshBasicMaterial({ color: 0x8B5CF6, transparent: true, opacity: 0.65 });
+    const archRing = new THREE.Mesh(archRingGeo, archMat);
+    archRing.rotation.x = Math.PI / 2.6;
+    architectureGroup.add(archRing);
 
-    const knotGeo = new THREE.TorusKnotGeometry(1.6, 0.35, 128, 16);
-    const knotMat = new THREE.MeshStandardMaterial({
-      color: 0x0B1220,
+    // ==========================================
+    // 6. WORLD 4: PROVEN WORK (Ashtonava Silk & YesDhobi Logistics)
+    // ==========================================
+    const workGroup = new THREE.Group();
+    scene.add(workGroup);
+
+    // Ashtonava Luxury Silk Shimmer Planes (Large, tactile folds)
+    const silkCount = isMobile ? 3 : 5;
+    const silkPlanes: THREE.Mesh[] = [];
+    for (let i = 0; i < silkCount; i++) {
+      const planeGeo = new THREE.PlaneGeometry(isMobile ? 3.4 : 4.4, isMobile ? 5.0 : 6.2, 28, 28);
+      const planeMat = new THREE.MeshStandardMaterial({
+        color: 0xF59E0B,
+        metalness: 0.92,
+        roughness: 0.16,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.45,
+      });
+      const plane = new THREE.Mesh(planeGeo, planeMat);
+      plane.position.set(-1.8 + i * 0.9, 0, -1.0 + i * 0.4);
+      plane.rotation.y = 0.26 * (i - 2);
+      workGroup.add(plane);
+      silkPlanes.push(plane);
+    }
+
+    // YesDhobi logistics conveyor curve
+    const stations = [
+      { name: 'Customer', x: -2.2, y: 1.4 },
+      { name: 'Booking', x: -0.6, y: -0.7 },
+      { name: 'Pickup', x: 1.0, y: 1.2 },
+      { name: 'Processing', x: 2.6, y: -0.5 },
+      { name: 'Delivery', x: 4.2, y: 0.9 },
+    ];
+    const curvePoints = stations.map((s) => new THREE.Vector3(s.x, s.y, -0.6));
+    const logisticsCurve = new THREE.CatmullRomCurve3(curvePoints);
+    const curveGeo = new THREE.TubeGeometry(logisticsCurve, 54, 0.045, 8, false);
+    const curveMat = new THREE.MeshBasicMaterial({ color: 0x10B981, transparent: true, opacity: 0.7 });
+    const curveMesh = new THREE.Mesh(curveGeo, curveMat);
+    workGroup.add(curveMesh);
+
+    const packetGeo = new THREE.SphereGeometry(0.14, 16, 16);
+    const packetMat = new THREE.MeshBasicMaterial({ color: 0x06B6D4 });
+    const packetMesh = new THREE.Mesh(packetGeo, packetMat);
+    workGroup.add(packetMesh);
+
+    // ==========================================
+    // 7. NEW SIGNATURE TRANSITION: THE DIMENSIONAL WORLD MORPH (SHARED ARCHITECTURE)
+    // ==========================================
+    // Replaces the black hole with a majestic deconstructing and reassembling
+    // architectural structure. Previous world physically becomes the next world.
+    const morphGroup = new THREE.Group();
+    scene.add(morphGroup);
+
+    // Twin monumental portals / architectural wings that part as camera moves through
+    const wingGeo = new THREE.BoxGeometry(0.3, 5.8, 0.3);
+    const wingMat = new THREE.MeshStandardMaterial({
+      color: 0x19D3E6,
       metalness: 0.9,
+      roughness: 0.15,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.75,
+    });
+
+    // Left Portal Wing (Columns + horizontal cantilever lintels)
+    const leftWing = new THREE.Group();
+    const leftCol1 = new THREE.Mesh(wingGeo, wingMat);
+    leftCol1.position.set(-1.6, 0, 0);
+    leftWing.add(leftCol1);
+    const leftCol2 = new THREE.Mesh(wingGeo, wingMat);
+    leftCol2.position.set(-2.4, 0, -0.5);
+    leftWing.add(leftCol2);
+    morphGroup.add(leftWing);
+
+    // Right Portal Wing
+    const rightWing = new THREE.Group();
+    const rightCol1 = new THREE.Mesh(wingGeo, wingMat);
+    rightCol1.position.set(1.6, 0, 0);
+    rightWing.add(rightCol1);
+    const rightCol2 = new THREE.Mesh(wingGeo, wingMat);
+    rightCol2.position.set(2.4, 0, -0.5);
+    rightWing.add(rightCol2);
+    morphGroup.add(rightWing);
+
+    // Cantilever Overhead Lintel (Parting upwards during pass-through)
+    const lintelGeo = new THREE.BoxGeometry(4.8, 0.28, 0.28);
+    const lintelMat = new THREE.MeshStandardMaterial({
+      color: 0xFF5722,
+      metalness: 0.85,
       roughness: 0.2,
       wireframe: true,
       transparent: true,
-      opacity: 0.45,
+      opacity: 0.75,
     });
-    const knotMesh = new THREE.Mesh(knotGeo, knotMat);
-    aboutGroup.add(knotMesh);
+    const lintelBeam = new THREE.Mesh(lintelGeo, lintelMat);
+    lintelBeam.position.set(0, 2.9, 0);
+    morphGroup.add(lintelBeam);
 
-    // ==========================================
-    // 10. CONTACT: CONVERGENCE FOCAL SYSTEM (World 7)
-    // ==========================================
-    const contactGroup = new THREE.Group();
-    scene.add(contactGroup);
+    // 6 Flowing 3D Extruded Architectural Ribbons that sweep past the camera
+    const ribbonCount = isMobile ? 4 : 6;
+    const ribbonMeshes: THREE.Mesh[] = [];
+    const ribbonMaterials: THREE.MeshBasicMaterial[] = [];
 
-    const convRingGeo = new THREE.RingGeometry(2.4, 2.45, 64);
-    const convRingMat = new THREE.MeshBasicMaterial({
-      color: 0xFF5722,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.4,
-    });
-    const convRing = new THREE.Mesh(convRingGeo, convRingMat);
-    convRing.rotation.x = Math.PI / 3;
-    contactGroup.add(convRing);
+    for (let r = 0; r < ribbonCount; r++) {
+      const angle = (r / ribbonCount) * Math.PI * 2;
+      const radius = 2.4 + (r % 2) * 0.8;
+      // Flowing path extending along Z through the camera viewport
+      const ribbonPath = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(Math.cos(angle) * radius * 1.5, Math.sin(angle) * radius * 0.8, -4.0),
+        new THREE.Vector3(Math.cos(angle + 0.6) * radius * 1.2, Math.sin(angle + 0.6) * radius * 0.7, -1.0),
+        new THREE.Vector3(Math.cos(angle + 1.2) * (radius + 0.8), Math.sin(angle + 1.2) * (radius + 0.6), 2.5),
+        new THREE.Vector3(Math.cos(angle + 1.8) * (radius + 1.6), Math.sin(angle + 1.8) * (radius + 1.2), 6.0),
+      ]);
 
-    // ==========================================
-    // 11. GLOBAL PERSISTENT PARTICLES (Drifting through universe)
-    // ==========================================
-    const particleCount = isMobile ? 120 : 300;
-    const particleGeo = new THREE.BufferGeometry();
-    const particlePos = new Float32Array(particleCount * 3);
-    const particleVel = new Float32Array(particleCount * 3);
-
-    for (let i = 0; i < particleCount; i++) {
-      particlePos[i * 3] = (Math.random() - 0.5) * 22;
-      particlePos[i * 3 + 1] = (Math.random() - 0.5) * 16;
-      particlePos[i * 3 + 2] = (Math.random() - 0.5) * 14 - 1;
-
-      particleVel[i * 3] = (Math.random() - 0.5) * 0.008;
-      particleVel[i * 3 + 1] = (Math.random() - 0.5) * 0.008;
-      particleVel[i * 3 + 2] = (Math.random() - 0.5) * 0.008;
+      const rGeo = new THREE.TubeGeometry(ribbonPath, 48, 0.04, 8, false);
+      const rMat = new THREE.MeshBasicMaterial({
+        color: r % 2 === 0 ? 0x19D3E6 : 0xFF5722,
+        transparent: true,
+        opacity: 0.7,
+      });
+      const rMesh = new THREE.Mesh(rGeo, rMat);
+      morphGroup.add(rMesh);
+      ribbonMeshes.push(rMesh);
+      ribbonMaterials.push(rMat);
     }
 
-    particleGeo.setAttribute('position', new THREE.BufferAttribute(particlePos, 3));
-    const particleMat = new THREE.PointsMaterial({
-      size: isMobile ? 0.045 : 0.055,
-      color: COLOR_STOPS[0].primary,
+    // Internal crystalline reassembly core (Revealed inside the structure during pass-through)
+    const morphCoreGeo = new THREE.IcosahedronGeometry(1.2, 1);
+    const morphCoreMat = new THREE.MeshStandardMaterial({
+      color: 0x19D3E6,
+      emissive: 0x06B6D4,
+      emissiveIntensity: 0.5,
+      wireframe: true,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.8,
+    });
+    const morphCore = new THREE.Mesh(morphCoreGeo, morphCoreMat);
+    morphGroup.add(morphCore);
+
+    // ==========================================
+    // 8. WORLD 6: CONVERGENCE (Luminous Ordered Harmonic Core)
+    // ==========================================
+    const convergenceGroup = new THREE.Group();
+    scene.add(convergenceGroup);
+
+    const convRingGeo = new THREE.TorusGeometry(3.0, 0.035, 16, 80);
+    const convRingMat = new THREE.MeshBasicMaterial({ color: 0xFF5722, transparent: true, opacity: 0.5 });
+    const convRing = new THREE.Mesh(convRingGeo, convRingMat);
+    convergenceGroup.add(convRing);
+
+    const convRingGeo2 = new THREE.TorusGeometry(4.0, 0.03, 16, 80);
+    const convRingMat2 = new THREE.MeshBasicMaterial({ color: 0xF59E0B, transparent: true, opacity: 0.4 });
+    const convRing2 = new THREE.Mesh(convRingGeo2, convRingMat2);
+    convRing2.rotation.x = Math.PI / 3;
+    convergenceGroup.add(convRing2);
+
+    const convRingGeo3 = new THREE.TorusGeometry(5.0, 0.025, 16, 80);
+    const convRingMat3 = new THREE.MeshBasicMaterial({ color: 0x06B6D4, transparent: true, opacity: 0.3 });
+    const convRing3 = new THREE.Mesh(convRingGeo3, convRingMat3);
+    convRing3.rotation.y = Math.PI / 3;
+    convergenceGroup.add(convRing3);
+
+    const coreGeo = new THREE.IcosahedronGeometry(1.2, 1);
+    const coreMat = new THREE.MeshStandardMaterial({
+      color: 0xFF5722,
+      emissive: 0xFF5722,
+      emissiveIntensity: 0.45,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.7,
+    });
+    const coreMesh = new THREE.Mesh(coreGeo, coreMat);
+    convergenceGroup.add(coreMesh);
+
+    // ==========================================
+    // 9. AMBIENT BACKGROUND PARTICLES (Restrained, Text Safe Zone Enabled)
+    // ==========================================
+    const bgParticleCount = isMobile ? 35 : 85;
+    const bgGeo = new THREE.BufferGeometry();
+    const bgPos = new Float32Array(bgParticleCount * 3);
+    const bgBasePos = new Float32Array(bgParticleCount * 3);
+
+    for (let i = 0; i < bgParticleCount; i++) {
+      const px = (Math.random() - 0.5) * 22;
+      const py = (Math.random() - 0.5) * 16;
+      const pz = (Math.random() - 0.5) * 14 - 2;
+      bgPos[i * 3] = px;
+      bgPos[i * 3 + 1] = py;
+      bgPos[i * 3 + 2] = pz;
+      bgBasePos[i * 3] = px;
+      bgBasePos[i * 3 + 1] = py;
+      bgBasePos[i * 3 + 2] = pz;
+    }
+    bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
+
+    const bgMat = new THREE.PointsMaterial({
+      size: isMobile ? 0.04 : 0.035,
+      color: 0x06B6D4,
+      transparent: true,
+      opacity: isMobile ? 0.35 : 0.25,
       blending: THREE.AdditiveBlending,
     });
-    const particles = new THREE.Points(particleGeo, particleMat);
-    scene.add(particles);
+    const bgParticles = new THREE.Points(bgGeo, bgMat);
+    scene.add(bgParticles);
 
-    // ==========================================
-    // EVENT LISTENERS: MOUSE & RESIZE
-    // ==========================================
-    const onMouseMove = (e: MouseEvent) => {
-      stateRef.current.targetMouseX = (e.clientX / window.innerWidth - 0.5) * 2;
-      stateRef.current.targetMouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+    // Mouse tracking with soft damping
+    const handleMouseMove = (e: MouseEvent) => {
+      stateRef.current.targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
+      stateRef.current.targetMouseY = -(e.clientY / window.innerHeight) * 2 + 1;
     };
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
-    const onResize = () => {
+    // Viewport resize & adaptive composition handler
+    const handleResize = () => {
       if (!container) return;
       width = container.clientWidth || window.innerWidth;
       height = container.clientHeight || window.innerHeight;
-      camera.aspect = width / height;
+      const newAspect = width / height;
+      const newMobile = width < 768;
+
+      stateRef.current.isMobile = newMobile;
+      stateRef.current.aspect = newAspect;
+
+      camera.aspect = newAspect;
+      camera.fov = newMobile ? (newAspect < 0.55 ? 60 : 56) : 48;
       camera.updateProjectionMatrix();
+
+      cameraStops = getCameraStops(newMobile, newAspect);
+
       renderer.setSize(width, height);
-      stateRef.current.isMobile = width < 768;
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, newMobile ? 1.5 : 1.75));
     };
-
-    window.addEventListener('mousemove', onMouseMove, { passive: true });
-    window.addEventListener('resize', onResize);
+    window.addEventListener('resize', handleResize);
 
     // ==========================================
-    // 12. CONTINUOUS ANIMATION & CAMERA MOTION LOOP
+    // 10. MAIN ANIMATION & CONTINUOUS CAMERA LOOP
     // ==========================================
-    let animId: number;
-    const clock = new THREE.Clock();
+    let animationFrameId: number;
+    let clock = new THREE.Clock();
 
-    const currentLookAt = new THREE.Vector3().copy(CAMERA_STOPS[0].look);
+    const currentCamPos = camera.position.clone();
+    const currentLookAt = new THREE.Vector3(0, 0, 0);
+    const targetCamPos = new THREE.Vector3();
     const targetLookAt = new THREE.Vector3();
-    const interpolatedCamPos = new THREE.Vector3();
+    const currentPrimary = new THREE.Color(COLOR_STOPS[0].primary);
+    const currentSecondary = new THREE.Color(COLOR_STOPS[0].secondary);
+    const currentFog = new THREE.Color(COLOR_STOPS[0].fog);
+    const tempVec = new THREE.Vector3();
 
-    // Reusable color vectors for zero garbage collection
-    const currentPrimary = new THREE.Color();
-    const currentSecondary = new THREE.Color();
-    const currentFog = new THREE.Color();
+    const animate = () => {
+      animationFrameId = requestAnimationFrame(animate);
 
-    const render = () => {
       const elapsed = clock.getElapsedTime();
-      const {
-        targetProgress,
-        activeCapability: cap,
-        formSubmitted: submitted,
-        reducedMotion: noMotion,
-        isMobile: mobileDevice,
-      } = stateRef.current;
+      const mobile = stateRef.current.isMobile;
 
-      // 1. Smooth Camera Inertia & Progress Damping
-      // The camera moves with physical momentum, subtle lag, and spring damping
-      const damping = noMotion ? 0.2 : 0.055;
-      stateRef.current.currentProgress += (targetProgress - stateRef.current.currentProgress) * damping;
-      const u = stateRef.current.currentProgress;
-
-      // Mouse smoothing
+      // Mouse damping
       stateRef.current.mouseX += (stateRef.current.targetMouseX - stateRef.current.mouseX) * 0.05;
       stateRef.current.mouseY += (stateRef.current.targetMouseY - stateRef.current.mouseY) * 0.05;
       const mx = stateRef.current.mouseX;
       const my = stateRef.current.mouseY;
 
-      // 2. Interpolate Continuous Camera Position along 3D Spline
-      const k = Math.min(Math.floor(u), CAMERA_STOPS.length - 2);
+      // Smooth continuous scroll progress interpolation across 7 worlds (0.0 to 6.0)
+      stateRef.current.currentProgress +=
+        (stateRef.current.targetProgress - stateRef.current.currentProgress) * 0.08;
+      const u = Math.max(0, Math.min(stateRef.current.currentProgress, 6.0));
+      const cap = stateRef.current.activeCapability;
+
+      // 1. Spline Camera Calculation across 7 stops
+      const k = Math.min(Math.floor(u), cameraStops.length - 2);
       const t = u - k;
-      const stopA = CAMERA_STOPS[k];
-      const stopB = CAMERA_STOPS[k + 1];
+      const smoothT = t * t * (3 - 2 * t);
 
-      interpolatedCamPos.lerpVectors(stopA.pos, stopB.pos, t);
-      targetLookAt.lerpVectors(stopA.look, stopB.look, t);
+      const stopA = cameraStops[k];
+      const stopB = cameraStops[k + 1];
 
-      // Autonomous subtle breathing motion (even when user stops scrolling, the world lives)
-      const breathingFactor = noMotion ? 0 : 1.0;
-      const breathX = Math.sin(elapsed * 0.4) * 0.08 * breathingFactor;
-      const breathY = Math.cos(elapsed * 0.5) * 0.06 * breathingFactor;
-      const parallax = noMotion ? 0 : (mobileDevice ? 0.2 : 0.45);
+      targetCamPos.lerpVectors(stopA.pos, stopB.pos, smoothT);
+      targetLookAt.lerpVectors(stopA.look, stopB.look, smoothT);
 
-      // THE SIGNATURE MOMENT: Gravitational plunge along Z during Black Hole Singularity passage (u in [1.2, 1.9])
-      let warpSurgeZ = 0;
-      if (u >= 1.2 && u <= 1.9) {
-        const warpProg = (u - 1.2) / 0.7; // 0 to 1
-        warpSurgeZ = Math.sin(warpProg * Math.PI) * -2.6; // Gravitational acceleration plunge into the event horizon
+      // Parallax mouse damping
+      targetCamPos.x += mx * (mobile ? 0.15 : 0.35);
+      targetCamPos.y += my * (mobile ? 0.12 : 0.25);
+
+      // PASSING THROUGH STRUCTURE MOMENT (At transition between World 4 and World 6, peaking at World 5)
+      // When approaching the Transformation section (u = 4.6 to 5.4), camera glides directly
+      // forward through the parting architectural gate!
+      let morphIntensity = 0;
+      if (u >= 4.5 && u <= 5.5) {
+        const morphNorm = (u - 4.5) / 1.0;
+        morphIntensity = Math.sin(morphNorm * Math.PI);
+        // Camera glides through structure opening
+        targetCamPos.z -= morphIntensity * (mobile ? 1.6 : 2.4);
       }
 
-      camera.position.x = interpolatedCamPos.x + mx * parallax + breathX;
-      camera.position.y = interpolatedCamPos.y - my * parallax * 0.6 + breathY;
-      camera.position.z = interpolatedCamPos.z + warpSurgeZ;
+      currentCamPos.lerp(targetCamPos, 0.08);
+      camera.position.copy(currentCamPos);
 
       currentLookAt.lerp(targetLookAt, 0.06);
       camera.lookAt(currentLookAt);
 
-      // 3. Continuous Color Transitions
+      // 2. Continuous Color Transitions
       const colorA = COLOR_STOPS[k];
       const colorB = COLOR_STOPS[k + 1];
-      currentPrimary.lerpColors(new THREE.Color(colorA.primary), new THREE.Color(colorB.primary), t);
-      currentSecondary.lerpColors(new THREE.Color(colorA.secondary), new THREE.Color(colorB.secondary), t);
-      currentFog.lerpColors(new THREE.Color(colorA.fog), new THREE.Color(colorB.fog), t);
+      currentPrimary.lerpColors(new THREE.Color(colorA.primary), new THREE.Color(colorB.primary), smoothT);
+      currentSecondary.lerpColors(new THREE.Color(colorA.secondary), new THREE.Color(colorB.secondary), smoothT);
+      currentFog.lerpColors(new THREE.Color(colorA.fog), new THREE.Color(colorB.fog), smoothT);
+
+      // Endless Living Ambient Pulse at Convergence (u >= 5.6)
+      if (u >= 5.6) {
+        const cyclePhase = (elapsed * 0.06) % 1.0;
+        const c1 = new THREE.Color(0xFF5722);
+        const c2 = new THREE.Color(0xF59E0B);
+        const c3 = new THREE.Color(0x06B6D4);
+        let living = c1;
+        if (cyclePhase < 0.33) living = c1.clone().lerp(c2, cyclePhase / 0.33);
+        else if (cyclePhase < 0.66) living = c2.clone().lerp(c3, (cyclePhase - 0.33) / 0.33);
+        else living = c3.clone().lerp(c1, (cyclePhase - 0.66) / 0.34);
+        currentPrimary.lerp(living, 0.04);
+      }
 
       keyLight.color.copy(currentPrimary);
       rimLight.color.copy(currentSecondary);
-      particleMat.color.copy(currentPrimary);
       if (scene.fog && 'color' in scene.fog) {
         scene.fog.color.copy(currentFog);
       }
 
-      // Dynamic light movement
-      keyLight.position.x = 4 + mx * 1.5 + Math.sin(elapsed * 0.5);
-      keyLight.position.y = 5 - my * 1.5 + Math.cos(elapsed * 0.5);
-
-      // 4. Overlapping Multi-World Blending
-      // Each environment's weight is a smooth continuous Gaussian/bell function centered at its index.
+      // 3. Overlapping World Weights
       const getWeight = (centerIdx: number, spread = 0.95) => {
         const dist = Math.abs(u - centerIdx);
         if (dist >= spread) return 0;
         return 0.5 * (1 + Math.cos((dist / spread) * Math.PI));
       };
 
-      const w0 = getWeight(0); // Hero Monument
-      const w1 = getWeight(1); // Services Network
-      const w2 = getWeight(2); // Ashtonava Luxury (Work 1)
-      const w3 = getWeight(3); // YesDhobi Logistics (Work 2)
-      const w4 = getWeight(4); // Process Engineering
-      const w5 = getWeight(5); // About Minimal
-      const w6 = getWeight(6); // Contact Convergence
+      const w0 = getWeight(0); // Hero
+      const w1 = getWeight(1); // Problem
+      const w2 = getWeight(2); // Capabilities
+      const w3 = getWeight(3); // Architecture
+      const w4 = getWeight(4); // Work
+      const w5 = getWeight(5); // Transformation Morph
+      const w6 = getWeight(6); // Convergence
 
-      // Signature Black Hole Transition Weight (peaks at u = 1.55, right between Services and Ashtonava)
-      const blackHoleWeight = Math.max(0, 1 - Math.abs(u - 1.55) / 0.55);
-
-      // Visibility toggling based on smooth threshold
+      // Group Visibilities
       monumentGroup.visible = w0 > 0.01;
-      networkGroup.visible = w1 > 0.01 || blackHoleWeight > 0.05;
-      blackHoleGroup.visible = blackHoleWeight > 0.01;
-      luxuryGroup.visible = w2 > 0.01;
-      logisticsGroup.visible = w3 > 0.01;
-      processGroup.visible = w4 > 0.01;
-      aboutGroup.visible = w5 > 0.01;
-      contactGroup.visible = w6 > 0.01;
+      problemGroup.visible = w1 > 0.01;
+      capabilityGroup.visible = w2 > 0.01;
+      architectureGroup.visible = w3 > 0.01;
+      workGroup.visible = w4 > 0.01;
+      morphGroup.visible = (w4 > 0.01 || w5 > 0.01 || morphIntensity > 0.01);
+      convergenceGroup.visible = w6 > 0.01;
 
-      // Update materials and positions with smooth weights
+      // 4. Autonomous Restrained Movement & Interactive Behaviors
+
       // World 0: Hero Monument
       if (monumentGroup.visible) {
-        monumentOuter.rotation.y += 0.003;
-        monumentOuter.rotation.x += 0.0015;
-        monumentInner.rotation.y -= 0.005;
-        monumentSeed.rotation.z += 0.008;
+        monumentOuter.rotation.x += 0.0025;
+        monumentOuter.rotation.y += 0.004;
+        monumentInner.rotation.x -= 0.005;
+        monumentInner.rotation.y -= 0.007;
+        monumentSeed.rotation.y += 0.01;
+        ring1.rotation.z += 0.0035;
+        ring2.rotation.z -= 0.0035;
 
-        const pulse = 1 + Math.sin(elapsed * 2) * 0.04;
-        monumentSeed.scale.set(pulse, pulse, pulse);
-        ring1.rotation.z += 0.002;
-        ring2.rotation.z -= 0.0025;
-
-        // When scrolling toward Services, monument separates into network
-        const sep = 1 + Math.max(0, u) * 0.8;
-        monumentOuter.scale.set(sep, sep, sep);
-        outerMat.opacity = 0.55 * w0;
-        seedMat.opacity = 0.75 * w0;
-        ringMat1.opacity = 0.35 * w0;
-        ringMat2.opacity = 0.3 * w0;
+        outerMat.opacity = 0.65 * w0;
+        innerMat.opacity = 0.9 * w0;
+        seedMat.opacity = 0.85 * w0;
+        ringMat1.opacity = 0.4 * w0;
+        ringMat2.opacity = 0.35 * w0;
       }
 
-      // World 1: Technology Network
-      if (networkGroup.visible) {
-        networkGroup.rotation.y = Math.sin(elapsed * 0.1) * 0.08;
-        lineMat.opacity = 0.45 * w1;
+      // World 1: Problem
+      if (problemGroup.visible) {
+        redCube.rotation.x += 0.006;
+        redCube.rotation.y += 0.005;
+        blueCube.rotation.x -= 0.005;
+        blueCube.rotation.y -= 0.006;
+        tensionMesh.rotation.z = Math.sin(elapsed * 0.5) * 0.05;
 
-        // When Black Hole approaches, network lines stretch and bend toward the singularity
-        if (blackHoleWeight > 0.02) {
-          const stretch = 1 + blackHoleWeight * 0.6;
-          networkGroup.scale.set(1 - blackHoleWeight * 0.3, 1 - blackHoleWeight * 0.3, stretch);
-        } else {
-          networkGroup.scale.set(1, 1, 1);
-        }
+        redMat.opacity = 0.7 * w1;
+        blueMat.opacity = 0.7 * w1;
+        tensionMat.opacity = 0.5 * w1;
+      }
 
-        focusMesh.rotation.x += 0.01;
-        focusMesh.rotation.y += 0.015;
+      // World 2: Capabilities
+      if (capabilityGroup.visible) {
+        capNodes.forEach((node) => {
+          node.rotation.x += 0.008;
+          node.rotation.y += 0.012;
+          const nodeMat = node.material as THREE.MeshStandardMaterial;
+          nodeMat.opacity = 0.85 * w2;
+        });
+
+        focusMesh.rotation.x -= 0.004;
+        focusMesh.rotation.y -= 0.006;
+        focusMat.opacity = 0.75 * w2;
+
         if (cap) {
-          focusMesh.scale.lerp(new THREE.Vector3(1.7, 1.7, 1.7), 0.1);
+          focusMesh.scale.lerp(new THREE.Vector3(1.5, 1.5, 1.5), 0.1);
           if (cap === 'ai-products') focusMat.color.setHex(0x8B5CF6);
           else if (cap === 'mobile-products') focusMat.color.setHex(0xFF5722);
           else if (cap === 'business-systems') focusMat.color.setHex(0x2563EB);
@@ -698,161 +755,128 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
         }
       }
 
-      // SIGNATURE BLACK HOLE & ACCRETION SINGULARITY TRANSITION (1 -> 2: Into Work)
-      if (blackHoleGroup.visible) {
-        // Horizon gravitational pulse
-        const horizonPulse = 1 + Math.sin(elapsed * 3.5) * 0.04;
-        eventHorizon.scale.set(horizonPulse, horizonPulse, horizonPulse);
-
-        // Glowing photon ring
-        photonRingMat.opacity = blackHoleWeight * 0.95;
-        photonRing.rotation.z += 0.025;
-
-        // Accretion rings rotate with differential Keplerian speeds
-        accretionRings.forEach((r, idx) => {
-          const rMat = r.material as THREE.MeshBasicMaterial;
-          rMat.opacity = blackHoleWeight * (0.8 - idx * 0.12);
-          r.rotation.z += 0.025 * (idx % 2 === 0 ? 1 : -1) * (2.0 - idx * 0.3);
-          const rScale = 1 + Math.sin(elapsed * 2.5 + idx) * 0.08;
-          r.scale.set(rScale, rScale, rScale);
+      // World 3: Architecture
+      if (architectureGroup.visible) {
+        pillarBeams.forEach((b, idx) => {
+          const bMat = b.material as THREE.MeshStandardMaterial;
+          bMat.opacity = 0.8 * w3;
+          b.rotation.z = (idx % 2 === 0 ? 0.06 : -0.06) + Math.sin(elapsed * 0.35 + idx) * 0.018;
         });
-
-        // Relativistic warp streaks shooting forward
-        streakMat.opacity = blackHoleWeight * 0.85;
-        const sArr = streakGeo.attributes.position.array as Float32Array;
-        for (let i = 0; i < streakCount; i++) {
-          sArr[i * 6 + 2] += 0.35;
-          sArr[i * 6 + 5] += 0.35;
-          if (sArr[i * 6 + 2] > 9) {
-            sArr[i * 6 + 2] = -7;
-            sArr[i * 6 + 5] = -11;
-          }
-        }
-        streakGeo.attributes.position.needsUpdate = true;
-
-        // Swirling accretion vortex particles
-        vortexMat.opacity = blackHoleWeight * 0.92;
-        const vPos = vortexGeo.attributes.position.array as Float32Array;
-        for (let i = 0; i < vortexParticleCount; i++) {
-          vortexAngles[i] += vortexSpeeds[i] * (1 + blackHoleWeight * 2.0);
-          const r = vortexRadii[i];
-          vPos[i * 3] = Math.cos(vortexAngles[i]) * r;
-          vPos[i * 3 + 1] = Math.sin(vortexAngles[i]) * r * 0.45;
-        }
-        vortexGeo.attributes.position.needsUpdate = true;
+        archMat.opacity = 0.65 * w3;
       }
 
-      // World 2: Ashtonava Luxury Shimmer Silk
-      if (luxuryGroup.visible) {
-        const unfold = Math.min(1, Math.max(0.2, (u - 1.5) / 0.5));
-        luxuryPlanes.forEach((p, idx) => {
-          p.position.y += Math.sin(elapsed * 0.8 + idx) * 0.0025;
-          p.rotation.y = 0.25 * (idx - 2) * unfold + Math.sin(elapsed * 0.4 + idx) * 0.06;
-          p.scale.set(unfold, unfold, unfold);
+      // World 4: Work (Silk & Logistics)
+      if (workGroup.visible) {
+        silkPlanes.forEach((p, idx) => {
+          p.position.y += Math.sin(elapsed * 0.7 + idx) * 0.003;
+          p.rotation.y = 0.26 * (idx - 2) + Math.sin(elapsed * 0.35 + idx) * 0.04;
           const mat = p.material as THREE.MeshStandardMaterial;
-          mat.opacity = 0.35 * w2;
+          mat.opacity = 0.45 * w4;
         });
-      }
 
-      // World 3: YesDhobi Operations & Logistics
-      if (logisticsGroup.visible) {
-        curveMesh.rotation.z = Math.sin(elapsed * 0.2) * 0.02;
-        curveMat.opacity = 0.7 * w3;
-
-        // Animate operational packet flowing along conveyor path
-        const packetT = (elapsed * 0.35) % 1;
+        curveMat.opacity = 0.7 * w4;
+        const packetT = (elapsed * 0.3) % 1;
         const pt = logisticsCurve.getPoint(packetT);
         packetMesh.position.copy(pt);
       }
 
-      // World 4: Process Construction Engineering
-      if (processGroup.visible) {
-        trussBeams.forEach((b, idx) => {
-          const bMat = b.material as THREE.MeshStandardMaterial;
-          bMat.opacity = 0.8 * w4;
-          b.rotation.z = (idx % 2 === 0 ? 0.3 : -0.3) + Math.sin(elapsed * 0.5 + idx) * 0.03;
+      // World 5: SIGNATURE DIMENSIONAL WORLD MORPH (Deconstruct, Part & Reassemble)
+      if (morphGroup.visible) {
+        const morphWeight = Math.max(w5, morphIntensity, w4 * 0.85);
+
+        // A. Portals Part Outward (Creating the gap camera flies through)
+        const partDistance = morphWeight * (mobile ? 1.8 : 2.8);
+        leftWing.position.x = -partDistance;
+        rightWing.position.x = partDistance;
+
+        // B. Cantilever Lintel rises and pivots
+        lintelBeam.position.y = 2.9 + morphWeight * 1.5;
+        lintelBeam.rotation.z = Math.sin(elapsed * 0.4) * 0.06;
+
+        wingMat.opacity = 0.75 * morphWeight;
+        lintelMat.opacity = 0.75 * morphWeight;
+
+        // C. Flowing 3D Ribbons sweep past the camera
+        ribbonMeshes.forEach((rm, idx) => {
+          rm.rotation.z = elapsed * 0.15 + (idx * Math.PI) / ribbonCount;
+          const rMat = ribbonMaterials[idx];
+          rMat.opacity = 0.65 * morphWeight;
         });
+
+        // D. Internal Reassembly Core
+        morphCore.rotation.x += 0.006;
+        morphCore.rotation.y += 0.01;
+        morphCore.scale.setScalar(0.8 + morphWeight * 0.6);
+        morphCoreMat.opacity = 0.8 * morphWeight;
       }
 
-      // World 5: About Minimal Sculpture
-      if (aboutGroup.visible) {
-        knotMesh.rotation.x += 0.002;
-        knotMesh.rotation.y += 0.003;
-        knotMat.opacity = 0.45 * w5;
+      // World 6: Convergence Core
+      if (convergenceGroup.visible) {
+        convRing.rotation.z += 0.005;
+        convRingMat.opacity = 0.5 * w6;
+
+        convRing2.rotation.y += 0.007;
+        convRing2.rotation.x += 0.0035;
+        convRingMat2.opacity = 0.4 * w6;
+
+        convRing3.rotation.z -= 0.0045;
+        convRingMat3.opacity = 0.3 * w6;
+
+        coreMesh.rotation.x += 0.007;
+        coreMesh.rotation.y += 0.01;
+        coreMat.opacity = 0.7 * w6;
       }
 
-      // World 6: Contact Convergence Vortex
-      if (contactGroup.visible) {
-        convRing.rotation.z += 0.006;
-        convRingMat.opacity = 0.4 * w6;
-      }
+      // 5. RESTRAINED AMBIENT PARTICLES & DYNAMIC TEXT SAFE ZONE
+      const bgPosAttr = bgGeo.attributes.position as THREE.BufferAttribute;
+      const bgPosArr = bgPosAttr.array as Float32Array;
 
-      // 5. Global Autonomous Particles Animation with Gravitational Distortion
-      const pAttr = particleGeo.attributes.position as THREE.BufferAttribute;
-      const pArr = pAttr.array as Float32Array;
-      const speedMod = noMotion ? 0.2 : submitted ? 0.05 : (w6 > 0.5 ? 1.9 : 1.0);
+      for (let i = 0; i < bgParticleCount; i++) {
+        bgBasePos[i * 3 + 1] += 0.0018;
+        if (bgBasePos[i * 3 + 1] > 8) bgBasePos[i * 3 + 1] = -8;
 
-      for (let i = 0; i < particleCount; i++) {
-        const idx = i * 3;
-        pArr[idx] += particleVel[idx] * speedMod;
-        pArr[idx + 1] += particleVel[idx + 1] * speedMod;
-        pArr[idx + 2] += particleVel[idx + 2] * speedMod;
+        tempVec.set(bgBasePos[i * 3], bgBasePos[i * 3 + 1], bgBasePos[i * 3 + 2]);
+        tempVec.project(camera);
 
-        // Gravitational Attraction toward Black Hole Singularity when transitioning into Work (blackHoleWeight > 0.02)
-        if (blackHoleWeight > 0.02) {
-          const dx = pArr[idx];
-          const dy = pArr[idx + 1];
-          const dz = pArr[idx + 2] - 1.0;
-          const dist = Math.sqrt(dx * dx + dy * dy + dz * dz) + 0.4;
-          const pullForce = (blackHoleWeight * 0.06) / (dist * 0.7);
-          // Radial pull + accretion vortex twist
-          pArr[idx] -= (dx / dist) * pullForce - (dy / dist) * pullForce * 0.5;
-          pArr[idx + 1] -= (dy / dist) * pullForce + (dx / dist) * pullForce * 0.5;
-          pArr[idx + 2] -= (dz / dist) * pullForce;
+        // Safe zone avoidance: steer away from typography region
+        const inSafeZone = tempVec.x > -0.85 && tempVec.x < 0.25 && tempVec.y > -0.75 && tempVec.y < 0.75;
+        if (inSafeZone) {
+          bgPosArr[i * 3] += (bgBasePos[i * 3] + 2.8 - bgPosArr[i * 3]) * 0.05;
+        } else {
+          bgPosArr[i * 3] += (bgBasePos[i * 3] - bgPosArr[i * 3]) * 0.05;
         }
-
-        // Convergence mode when approaching Contact (w6 > 0.3)
-        if (w6 > 0.3) {
-          const convStrength = 0.015 * w6;
-          pArr[idx] += (0 - pArr[idx]) * convStrength;
-          pArr[idx + 1] += (0 - pArr[idx + 1]) * convStrength;
-          pArr[idx + 2] += (0 - pArr[idx + 2]) * convStrength;
-        }
-
-        // Boundary wrapping keeps the world alive in all directions
-        if (pArr[idx] > 12) pArr[idx] = -12;
-        if (pArr[idx] < -12) pArr[idx] = 12;
-        if (pArr[idx + 1] > 9) pArr[idx + 1] = -9;
-        if (pArr[idx + 1] < -9) pArr[idx + 1] = 9;
-        if (pArr[idx + 2] > 8) pArr[idx + 2] = -8;
-        if (pArr[idx + 2] < -8) pArr[idx + 2] = 8;
+        bgPosArr[i * 3 + 1] = bgBasePos[i * 3 + 1];
+        bgPosArr[i * 3 + 2] = bgBasePos[i * 3 + 2];
       }
-      pAttr.needsUpdate = true;
+      bgPosAttr.needsUpdate = true;
 
       renderer.render(scene, camera);
-      animId = requestAnimationFrame(render);
     };
 
-    animId = requestAnimationFrame(render);
+    animate();
 
     return () => {
-      cancelAnimationFrame(animId);
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('resize', onResize);
-      renderer.dispose();
-      if (container.contains(renderer.domElement)) {
+      cancelAnimationFrame(animationFrameId);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', handleResize);
+      if (container && renderer.domElement) {
         container.removeChild(renderer.domElement);
       }
+      renderer.dispose();
     };
   }, []);
+
+  if (!webglSupported) {
+    return (
+      <div className="fixed inset-0 z-0 bg-[#070A12] pointer-events-none" />
+    );
+  }
 
   return (
     <div
       ref={mountRef}
-      className={`fixed inset-0 pointer-events-none z-0 overflow-hidden ${
-        webglSupported ? 'bg-[#070A12]' : 'bg-gradient-to-b from-[#070A12] via-[#090F1E] to-[#070A12]'
-      }`}
-      aria-hidden="true"
+      className="fixed inset-0 z-0 pointer-events-none overflow-hidden"
+      style={{ opacity: 1 }}
     />
   );
 };

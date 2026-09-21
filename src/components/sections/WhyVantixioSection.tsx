@@ -33,15 +33,15 @@ export const WhyVantixioSection: React.FC = () => {
                   key={principle.id}
                   onMouseEnter={() => setActivePrinciple(principle)}
                   onClick={() => setActivePrinciple(principle)}
-                  className={`group relative rounded-xl p-5 transition-all duration-300 cursor-pointer border flex items-center justify-between ${
+                  className={`group relative p-4 transition-all duration-300 cursor-pointer border flex items-center justify-between ${
                     isActive
-                      ? 'bg-[#0E1628] border-cyan-400 shadow-xl shadow-cyan-950/30 translate-x-1.5'
-                      : 'bg-[#080D1A]/90 hover:bg-[#0C1222] border-slate-800/80'
+                      ? 'border-cyan-400 bg-cyan-950/20 shadow-lg shadow-cyan-950/20 translate-x-1.5'
+                      : 'border-slate-800/60 hover:border-slate-700'
                   }`}
                 >
                   <div className="flex items-center space-x-4">
                     {/* Glowing Orange Marker Cube matching PDF 1 Page 9 */}
-                    <div className={`w-3.5 h-3.5 rounded-sm transition-all ${
+                    <div className={`w-3 h-3 rounded-sm transition-all ${
                       isActive ? 'bg-[#FF5722] shadow-[0_0_12px_#FF5722] scale-125' : 'bg-slate-700 group-hover:bg-[#FF5722]/50'
                     }`} />
 
@@ -49,7 +49,7 @@ export const WhyVantixioSection: React.FC = () => {
                       <div className="text-xs font-mono text-slate-400 group-hover:text-cyan-300 transition-colors uppercase">
                         {principle.title}
                       </div>
-                      <div className="text-sm sm:text-base font-display font-semibold text-white mt-0.5">
+                      <div className="text-sm sm:text-base font-display font-semibold text-white mt-0.5 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
                         {principle.tagline}
                       </div>
                     </div>
@@ -64,16 +64,14 @@ export const WhyVantixioSection: React.FC = () => {
           </div>
 
           {/* Right Column: Dynamic Technical Blueprint Inspector for Active Principle */}
-          <div className="lg:col-span-5 rounded-2xl p-6 sm:p-8 bg-[#090F1E] border border-cyan-500/30 backdrop-blur-md flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-cyan-500/5 rounded-full blur-2xl pointer-events-none" />
-
+          <div className="lg:col-span-5 p-6 sm:p-8 border border-cyan-500/30 flex flex-col justify-between relative">
             <div>
-              <div className="flex items-center justify-between text-xs font-mono text-slate-400 mb-3 pb-3 border-b border-slate-800">
+              <div className="flex items-center justify-between text-xs font-mono text-slate-400 mb-3 pb-3 border-b border-slate-800/60">
                 <span className="text-[#FF5722] font-semibold">PRINCIPLE 0{activePrinciple.number} // TELEMETRY</span>
                 <span className="text-cyan-300">ACTIVE STANDARD</span>
               </div>
 
-              <h4 className="text-2xl font-display font-bold text-white mb-2">
+              <h4 className="text-2xl font-display font-bold text-white mb-2 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
                 {activePrinciple.title}
               </h4>
               <p className="text-sm font-mono text-cyan-400 mb-4">
@@ -86,12 +84,12 @@ export const WhyVantixioSection: React.FC = () => {
             </div>
 
             {/* Technical Execution Box */}
-            <div className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
+            <div className="p-4 border-l-2 border-cyan-400 space-y-1.5">
               <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400 flex items-center space-x-1.5">
                 <Terminal className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Architectural Guarantee</span>
               </div>
-              <p className="text-xs font-mono text-slate-300">
+              <p className="text-xs font-mono text-slate-200 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
                 {activePrinciple.technicalImplication}
               </p>
             </div>

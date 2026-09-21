@@ -11,38 +11,33 @@ import { Navbar } from './components/ui/Navbar';
 import { HeroSection } from './components/sections/HeroSection';
 import { CorePropositionSection } from './components/sections/CorePropositionSection';
 import { CapabilitiesSection } from './components/sections/CapabilitiesSection';
-import { ClientWorldsSection } from './components/sections/ClientWorldsSection';
 import { VantixioStandardSection } from './components/sections/VantixioStandardSection';
-import { ProcessSection } from './components/sections/ProcessSection';
-import { SignatureTransformationSection } from './components/sections/SignatureTransformationSection';
 import { TransformationSection } from './components/sections/TransformationSection';
-import { TechnologySection } from './components/sections/TechnologySection';
-import { WhoWeBuildForSection } from './components/sections/WhoWeBuildForSection';
-import { WhyVantixioSection } from './components/sections/WhyVantixioSection';
-import { TestimonialsSection } from './components/sections/TestimonialsSection';
-import { FinalCTASection } from './components/sections/FinalCTASection';
+import { ClientWorldsSection } from './components/sections/ClientWorldsSection';
+import { ConvergenceSection } from './components/sections/ConvergenceSection';
 import { Footer } from './components/sections/Footer';
 import { StoryModal } from './components/modals/StoryModal';
 import { ContactModal } from './components/modals/ContactModal';
 
+// Exactly 7 Major Scroll Worlds
 const WORLD_ANCHORS = [
-  'hero',           // 0: Tech Monument
-  'capabilities',   // 1: Digital Network
-  'ashtonava',      // 2: Luxury Commerce (Work 1) [Black hole transition at 1.0 -> 2.0]
-  'yesdhobi',       // 3: Business Operations (Work 2)
-  'process',        // 4: Engineering World
-  'standard',       // 5: Minimal World (About)
-  'contact',        // 6: Convergence
+  'hero',           // 0: Hero Opening (Software. Built Around You.)
+  'problem',        // 1: The Problem (Forces You to Adapt vs. Flips the Model)
+  'capabilities',   // 2: What Vantixio Builds (Capabilities + Practical Tech Philosophy)
+  'architecture',   // 3: Vantixio Architecture (5 Pillars + 6-Stage Process)
+  'work',           // 4: Proven Impact (Ashtonava & YesDhobi)
+  'transformation', // 5: The Transformation Event (Dimensional World Morph: Complexity In, Engineered Clarity Out)
+  'contact',        // 6: Convergence (Client Profiles, 5 Craftsmanship Principles & Final Manifesto)
 ];
 
 const WORLD_NAMES: WorldSection[] = [
   'hero',
-  'services',
-  'ashtonava',
-  'yesdhobi',
-  'process',
-  'about',
-  'contact',
+  'problem',
+  'capabilities',
+  'architecture',
+  'work',
+  'transformation',
+  'convergence',
 ];
 
 export default function App() {
@@ -51,7 +46,7 @@ export default function App() {
   const [storyModalOpen, setStoryModalOpen] = useState(false);
   const [contactPrefill, setContactPrefill] = useState<string | undefined>(undefined);
 
-  // Persistent WebGL World State (Continuous Floating Journey)
+  // Persistent WebGL World State (Continuous Floating Journey across 7 Worlds)
   const [activeWorld, setActiveWorld] = useState<WorldSection>('hero');
   const [continuousProgress, setContinuousProgress] = useState(0);
   const [sectionProgress, setSectionProgress] = useState(0);
@@ -82,7 +77,7 @@ export default function App() {
           const gProgress = docHeight > 0 ? Math.min(Math.max(scrollY / docHeight, 0), 1) : 0;
           setGlobalScrollProgress(gProgress);
 
-          // Get vertical center of each anchor element
+          // Calculate vertical center of each anchor element
           const centers: number[] = [];
           for (let i = 0; i < WORLD_ANCHORS.length; i++) {
             const el = document.getElementById(WORLD_ANCHORS[i]);
@@ -155,7 +150,7 @@ export default function App() {
       {/* 00. Subtle Custom Cursor (Desktop Only) */}
       <CustomCursor />
 
-      {/* 00. Persistent Single-Canvas WebGL World (8 Chapters, Continuous Floating World) */}
+      {/* 00. Persistent Single-Canvas WebGL World (Continuous Floating World) */}
       <VantixioWorld
         activeSection={activeWorld}
         continuousProgress={continuousProgress}
@@ -185,55 +180,37 @@ export default function App() {
         onOpenContact={() => handleOpenContact()}
       />
 
-      {/* Main Experience Stream */}
+      {/* Main Experience Stream - 7 Major Continuous Scroll Worlds */}
       <main className="relative z-10">
         
-        {/* Chapter 01 — HERO: Digital Future */}
+        {/* WORLD 01: HERO — Software. Built Around You. */}
         <HeroSection
           onOpenContact={() => handleOpenContact('General Custom Build')}
           onOpenStory={() => setStoryModalOpen(true)}
         />
 
-        {/* 01 / The Core Proposition */}
+        {/* WORLD 02: THE PROBLEM — Most Software Forces You to Adapt. Vantixio Flips the Model. */}
         <CorePropositionSection />
 
-        {/* Chapter 02 — SERVICES: Technology Network */}
+        {/* WORLD 03: WHAT VANTIXIO BUILDS — Capabilities & Practical Technology Outcomes */}
         <CapabilitiesSection
           onOpenContact={(cap) => handleOpenContact(cap)}
           onHoverCapability={(capId) => setActiveCapability(capId)}
         />
 
-        {/* Chapters 03, 04 — CLIENT WORLDS: Ashtonava, YesDhobi */}
+        {/* WORLD 04: THE VANTIXIO ARCHITECTURE — 5 Pillars & 6-Stage Deliberate Engineering Process */}
+        <VantixioStandardSection />
+
+        {/* WORLD 05: PROVEN IMPACT — Ashtonava & YesDhobi */}
         <ClientWorldsSection
           onOpenContact={(project) => handleOpenContact(project)}
         />
 
-        {/* Chapter 06 — PROCESS: Engineering World */}
-        <ProcessSection />
-
-        {/* Signature Interactive Engine: Your Business -> Vantixio -> Your Software */}
-        <SignatureTransformationSection onOpenContact={() => handleOpenContact('Interactive Pipeline Blueprint')} />
-
-        {/* Operational Transformation */}
+        {/* WORLD 06: THE TRANSFORMATION EVENT — Gravitational Singularity (Complexity In, Structured Clarity Out) */}
         <TransformationSection onOpenContact={() => handleOpenContact('Operational Transformation')} />
 
-        {/* Technology & Philosophy */}
-        <TechnologySection />
-
-        {/* Chapter 07 — ABOUT: Human / Purpose / The Vantixio Standard */}
-        <VantixioStandardSection />
-
-        {/* Who We Build For */}
-        <WhoWeBuildForSection onOpenContact={(profile) => handleOpenContact(profile)} />
-
-        {/* Why Vantixio */}
-        <WhyVantixioSection />
-
-        {/* Real People. Real Impact. */}
-        <TestimonialsSection />
-
-        {/* Chapter 08 — CONTACT: Convergence */}
-        <FinalCTASection
+        {/* WORLD 07: CONVERGENCE — Client Profiles, 5 Engineering Principles & Final Manifesto / Contact */}
+        <ConvergenceSection
           initialCategory={contactPrefill}
           onOpenContactModal={() => handleOpenContact()}
           onFormSubmitted={() => setFormSubmitted(true)}

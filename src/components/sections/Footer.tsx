@@ -7,7 +7,7 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="relative bg-[#050811] border-t border-slate-800/80 pt-16 pb-12 overflow-hidden text-slate-400">
+    <footer className="relative bg-transparent border-t border-slate-800/60 pt-16 pb-16 overflow-hidden text-slate-400">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Footer Row */}
@@ -59,11 +59,11 @@ export const Footer: React.FC = () => {
               ARCHITECTURE
             </div>
             <ul className="space-y-2 text-xs font-mono">
-              <li><a href="#standard" className="hover:text-cyan-300 transition-colors">The 5 Vantixio Pillars</a></li>
+              <li><a href="#architecture" className="hover:text-cyan-300 transition-colors">The 5 Vantixio Pillars</a></li>
               <li><a href="#process" className="hover:text-cyan-300 transition-colors">Six-Stage Engineering</a></li>
-              <li><a href="#transformation" className="hover:text-cyan-300 transition-colors">Chaos Reconciliation</a></li>
-              <li><a href="#technology" className="hover:text-cyan-300 transition-colors">Deterministic Tech Stack</a></li>
-              <li><a href="#who-we-build-for" className="hover:text-cyan-300 transition-colors">Enterprise Security</a></li>
+              <li><a href="#transformation" className="hover:text-cyan-300 transition-colors">Operational Transformation</a></li>
+              <li><a href="#technology" className="hover:text-cyan-300 transition-colors">Technology Philosophy</a></li>
+              <li><a href="#why-vantixio" className="hover:text-cyan-300 transition-colors">Why Vantixio</a></li>
             </ul>
           </div>
 
@@ -74,8 +74,7 @@ export const Footer: React.FC = () => {
             </div>
             <ul className="space-y-2 text-xs font-mono">
               <li className="text-slate-300">hello@vantixio.com</li>
-              <li className="text-slate-400">Enterprise Engineering Guild</li>
-              <li className="text-slate-400">San Francisco & London</li>
+              <li className="text-slate-400">Custom Software Engineering</li>
               <li className="pt-2"><a href="#contact" className="text-[#FF5722] hover:underline font-semibold">Start Discovery Call →</a></li>
             </ul>
           </div>
