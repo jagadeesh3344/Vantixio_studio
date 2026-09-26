@@ -2,12 +2,10 @@ import { CapabilityItem, PillarItem, ProcessStage, TechZone, ClientProfile, Prin
 
 export const NAV_LINKS = [
   { label: 'Home', href: '#hero' },
-  { label: 'Problem', href: '#problem' },
-  { label: 'Capabilities', href: '#capabilities' },
-  { label: 'Architecture', href: '#architecture' },
-  { label: 'Work', href: '#work' },
-  { label: 'Transformation', href: '#transformation' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'The Idea', href: '#idea' },
+  { label: 'What We Build', href: '#capabilities' },
+  { label: 'Selected Work', href: '#work' },
+  { label: 'Build', href: '#contact' },
 ];
 
 export const HERO_POSITIONING = [
@@ -29,74 +27,50 @@ export const CAPABILITIES: CapabilityItem[] = [
   {
     id: 'web-apps',
     number: '01',
-    title: 'Custom Web Apps',
-    summary: 'Portals, real-time dashboards, marketplaces, internal operating systems, and client portals.',
+    title: 'Custom Web Applications',
+    summary: 'High-performance web apps, responsive portals, and operational interfaces tailored to your team.',
     description: 'Bespoke web applications engineered for complex workflows, responsive performance, and clean design tailored to your team’s exact operations.',
     features: ['Real-time executive dashboards', 'High-security client & partner portals', 'Scalable multi-sided marketplaces', 'Internal operating systems', 'Custom operational workspaces'],
     techStack: ['React', 'Next.js', 'TypeScript', 'Node.js', 'PostgreSQL', 'Redis'],
     iconType: 'web',
-    badge: 'CUSTOM WEB',
+    badge: 'WEB APPS',
     architectureDetails: 'Real-time state synchronization with multi-tenant row-level access security.'
   },
   {
     id: 'mobile-products',
     number: '02',
     title: 'Mobile Products',
-    summary: 'iOS, Android, and cross-platform apps crafted around real-world field and mobile usage.',
+    summary: 'iOS, Android, and cross-platform apps built for field operations and mobile ergonomics.',
     description: 'Mobile software crafted for offline support, location-aware field operations, hardware telemetry, and fluid touch ergonomics.',
     features: ['Native iOS & Android development', 'Offline database synchronization', 'Field operations & worker tooling', 'Biometric authentication', 'Push notification orchestration'],
     techStack: ['React Native', 'Swift', 'Kotlin', 'SQLite', 'GraphQL'],
     iconType: 'mobile',
-    badge: 'MOBILE & FIELD',
+    badge: 'MOBILE',
     architectureDetails: 'Optimized local state caches with bidirectional background synchronization.'
   },
   {
     id: 'business-systems',
     number: '03',
-    title: 'Business Systems',
-    summary: 'POS systems, ERP-style workflows, inventory control, CRM, and automated logic.',
+    title: 'Internal Business Systems',
+    summary: 'Custom operational engines, inventory control, and automated logic replacing fragmented SaaS.',
     description: 'Replace fragmented spreadsheets and rigid off-the-shelf software with a custom operating engine built around your company’s true commercial cadence.',
     features: ['Custom POS & multi-location register', 'Live inventory & supply chain tracking', 'Tailored relationship pipelines (CRM)', 'Automated approvals & governance', 'Financial ledger reconciliation'],
     techStack: ['Distributed SQL', 'Event Streaming', 'Domain Logic Engines', 'Audit Ledgers'],
     iconType: 'business',
-    badge: 'CORE OPS',
+    badge: 'CORE SYSTEMS',
     architectureDetails: 'Event-driven architecture ensuring complete transactional integrity and auditable logs.'
   },
   {
     id: 'ai-products',
     number: '04',
-    title: 'AI Products',
-    summary: 'AI copilots, intelligent agents, smart search, automated document parsing, and decision engines.',
+    title: 'Custom AI Workflows & Systems',
+    summary: 'Autonomous copilots, document intelligence, and automated decision engines embedded in your tools.',
     description: 'Context-aware intelligence embedded directly into your operational software. Autonomous copilots, document parsing pipelines, and decision engines.',
     features: ['Autonomous task-solving agents', 'Domain-trained copilot assistants', 'Automated document extraction', 'Semantic search & retrieval', 'Decision support engines'],
     techStack: ['LLMs / GenAI', 'Vector Databases', 'Custom RAG Pipelines', 'Python', 'FastAPI'],
     iconType: 'ai',
-    badge: 'INTELLIGENCE',
+    badge: 'AI SYSTEMS',
     architectureDetails: 'Secure private inference with enterprise guardrails and strict data isolation.'
-  },
-  {
-    id: 'integrations',
-    number: '05',
-    title: 'Integrations',
-    summary: 'Payment gateways, APIs, unified databases, messaging, third-party systems, and webhooks.',
-    description: 'Unify legacy databases, third-party payment gateways, logistics carriers, and internal communications into one cohesive digital ecosystem.',
-    features: ['Bi-directional webhook synchronization', 'Legacy database bridges', 'Payment gateways & banking integrations', 'Messaging & notification triggers', 'Fault-tolerant message queues'],
-    techStack: ['REST', 'GraphQL', 'gRPC', 'Message Queues', 'OAuth2 / SSO'],
-    iconType: 'integrations',
-    badge: 'CONNECTIVITY',
-    architectureDetails: 'Resilient integration middleware with automated retry mechanisms and rate-limit management.'
-  },
-  {
-    id: 'workflow-automation',
-    number: '06',
-    title: 'Workflow Automation',
-    summary: 'Replace repetitive manual work with reliable software workflows that run in the background.',
-    description: 'Eliminate manual copy-pasting, recurring data reconciliation, and repetitive follow-ups with reliable software workflows that run seamlessly in the background.',
-    features: ['Scheduled batch data reconciliations', 'Automated document and invoice generation', 'Incident alerting & auto-triage', 'Cross-system status triggers', 'Automated periodic report generation'],
-    techStack: ['Workflow Orchestration', 'Background Workers', 'Serverless Functions', 'Event Triggers'],
-    iconType: 'automation',
-    badge: 'AUTOMATION',
-    architectureDetails: 'Distributed fault-tolerant workflow orchestrators with state checkpointing.'
   }
 ];
 

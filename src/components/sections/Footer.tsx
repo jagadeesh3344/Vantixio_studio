@@ -38,44 +38,42 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* Column 1: Capabilities */}
+          {/* Column 1: Core Navigation */}
+          <div>
+            <div className="text-xs font-mono uppercase tracking-widest text-white font-semibold mb-4">
+              EXPERIENCES
+            </div>
+            <ul className="space-y-2 text-xs font-mono">
+              <li><a href="#hero" className="hover:text-cyan-300 transition-colors">01 // Monument Opening</a></li>
+              <li><a href="#idea" className="hover:text-cyan-300 transition-colors">02 // The Vantixio Idea</a></li>
+              <li><a href="#capabilities" className="hover:text-cyan-300 transition-colors">03 // What We Build</a></li>
+              <li><a href="#work" className="hover:text-cyan-300 transition-colors">04 // Selected Work</a></li>
+              <li><a href="#contact" className="hover:text-cyan-300 transition-colors">05 // Build Something</a></li>
+            </ul>
+          </div>
+
+          {/* Column 2: What We Build */}
           <div>
             <div className="text-xs font-mono uppercase tracking-widest text-white font-semibold mb-4">
               CAPABILITIES
             </div>
             <ul className="space-y-2 text-xs font-mono">
-              <li><a href="#capabilities" className="hover:text-cyan-300 transition-colors">Custom Web Platforms</a></li>
-              <li><a href="#capabilities" className="hover:text-cyan-300 transition-colors">Native Mobile Apps</a></li>
-              <li><a href="#capabilities" className="hover:text-cyan-300 transition-colors">Business Operating Systems</a></li>
-              <li><a href="#capabilities" className="hover:text-cyan-300 transition-colors">AI Copilots & Agents</a></li>
-              <li><a href="#capabilities" className="hover:text-cyan-300 transition-colors">API & Legacy Integrations</a></li>
-              <li><a href="#capabilities" className="hover:text-cyan-300 transition-colors">Workflow Automation</a></li>
+              <li><a href="#capabilities" className="hover:text-cyan-300 transition-colors">Custom Web Applications</a></li>
+              <li><a href="#capabilities" className="hover:text-cyan-300 transition-colors">Mobile Products</a></li>
+              <li><a href="#capabilities" className="hover:text-cyan-300 transition-colors">Internal Business Systems</a></li>
+              <li><a href="#capabilities" className="hover:text-cyan-300 transition-colors">Custom AI Workflows</a></li>
             </ul>
           </div>
 
-          {/* Column 2: Standard & Process */}
+          {/* Column 3: Contact & Direct Engineering */}
           <div>
             <div className="text-xs font-mono uppercase tracking-widest text-white font-semibold mb-4">
-              ARCHITECTURE
+              DIRECT ARCHITECTURE
             </div>
             <ul className="space-y-2 text-xs font-mono">
-              <li><a href="#architecture" className="hover:text-cyan-300 transition-colors">The 5 Vantixio Pillars</a></li>
-              <li><a href="#process" className="hover:text-cyan-300 transition-colors">Six-Stage Engineering</a></li>
-              <li><a href="#transformation" className="hover:text-cyan-300 transition-colors">Operational Transformation</a></li>
-              <li><a href="#technology" className="hover:text-cyan-300 transition-colors">Technology Philosophy</a></li>
-              <li><a href="#why-vantixio" className="hover:text-cyan-300 transition-colors">Why Vantixio</a></li>
-            </ul>
-          </div>
-
-          {/* Column 3: Contact & Legal */}
-          <div>
-            <div className="text-xs font-mono uppercase tracking-widest text-white font-semibold mb-4">
-              GET IN TOUCH
-            </div>
-            <ul className="space-y-2 text-xs font-mono">
-              <li className="text-slate-300">hello@vantixio.com</li>
+              <li className="text-slate-300">team.vantixiostudio@gmail.com</li>
               <li className="text-slate-400">Custom Software Engineering</li>
-              <li className="pt-2"><a href="#contact" className="text-[#FF5722] hover:underline font-semibold">Start Discovery Call →</a></li>
+              <li className="pt-2"><a href="#contact" className="text-[#FF5722] hover:underline font-semibold">Start Architecture Call →</a></li>
             </ul>
           </div>
 

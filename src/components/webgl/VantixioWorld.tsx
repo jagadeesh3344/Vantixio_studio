@@ -1,35 +1,26 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
-export type WorldSection =
-  | 'hero'
-  | 'problem'
-  | 'capabilities'
-  | 'architecture'
-  | 'work'
-  | 'transformation'
-  | 'convergence';
+export type WorldSection = 'hero' | 'idea' | 'capabilities' | 'work' | 'cta';
 
 export interface VantixioWorldProps {
   activeSection?: WorldSection;
-  continuousProgress?: number; // 0.0 (Hero) to 6.0 (Convergence)
+  continuousProgress?: number; // 0.0 (Hero) to 4.0 (Final CTA)
   sectionProgress?: number;
   globalScrollProgress?: number;
   activeCapability?: string | null;
+  activeWorkProject?: 'ashtonava' | 'yesdhobi';
   formSubmitted?: boolean;
   reducedMotion?: boolean;
 }
 
-// 7 Continuous World Color Signatures (RGB Hex)
-// 0: Hero, 1: Problem, 2: Capabilities, 3: Architecture, 4: Work, 5: Transformation Morph, 6: Convergence
+// 5 Continuous Color Environments: lighting, materials, atmosphere, reflections
 const COLOR_STOPS = [
-  { primary: 0x19D3E6, secondary: 0xFF5722, fog: 0x070A12 }, // 0: Hero (Cyan + Flame Coral)
-  { primary: 0xF43F5E, secondary: 0x06B6D4, fog: 0x080A14 }, // 1: Problem (Rose + Cyan)
-  { primary: 0x06B6D4, secondary: 0x3B82F6, fog: 0x060913 }, // 2: Capabilities (Electric Cyan + Cobalt)
-  { primary: 0x06B6D4, secondary: 0x8B5CF6, fog: 0x070A14 }, // 3: Architecture (Cyan + Indigo)
-  { primary: 0xF59E0B, secondary: 0x10B981, fog: 0x080A12 }, // 4: Work (Amber Gold + Emerald)
-  { primary: 0x19D3E6, secondary: 0xFF5722, fog: 0x070A14 }, // 5: Transformation Morph (Electric Cyan + Flame Coral)
-  { primary: 0xFF5722, secondary: 0xF59E0B, fog: 0x080A14 }, // 6: Convergence (Coral + Gold)
+  { primary: 0x19D3E6, secondary: 0xFF5722, fog: 0x070A12, accent: 0x06B6D4 }, // 0: Hero (Cyan + Flame Coral)
+  { primary: 0xF43F5E, secondary: 0x06B6D4, fog: 0x080A14, accent: 0x06B6D4 }, // 1: The Idea (Rigid Rose -> Adaptive Cyan)
+  { primary: 0x06B6D4, secondary: 0x6366F1, fog: 0x060913, accent: 0x3B82F6 }, // 2: Capabilities (Electric Cyan + Indigo)
+  { primary: 0xF59E0B, secondary: 0x10B981, fog: 0x080A12, accent: 0xF59E0B }, // 3: Work (Amber Gold + Emerald)
+  { primary: 0xFF5722, secondary: 0xF59E0B, fog: 0x080A14, accent: 0x19D3E6 }, // 4: Final CTA (Coral + Amber Living Monolith)
 ];
 
 export const VantixioWorld: React.FC<VantixioWorldProps> = ({
@@ -38,19 +29,20 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
   sectionProgress = 0,
   globalScrollProgress = 0,
   activeCapability = null,
+  activeWorkProject = 'ashtonava',
   formSubmitted = false,
   reducedMotion = false,
 }) => {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const [webglSupported, setWebglSupported] = useState(true);
 
-  // Mutable animation state references
   const stateRef = useRef({
     activeSection,
     continuousProgress,
     sectionProgress,
     globalScrollProgress,
     activeCapability,
+    activeWorkProject,
     formSubmitted,
     reducedMotion,
     currentProgress: continuousProgress,
@@ -61,18 +53,19 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
     targetMouseY: 0,
     isMobile: false,
     aspect: 1.0,
+    loadProgress: 0, // 0 -> 1 entrance assembly
   });
 
-  // Synchronize incoming props
   useEffect(() => {
     stateRef.current.activeSection = activeSection;
-    stateRef.current.targetProgress = Math.max(0, Math.min(continuousProgress, 6));
+    stateRef.current.targetProgress = Math.max(0, Math.min(continuousProgress, 4));
     stateRef.current.sectionProgress = sectionProgress;
     stateRef.current.globalScrollProgress = globalScrollProgress;
     stateRef.current.activeCapability = activeCapability;
+    stateRef.current.activeWorkProject = activeWorkProject;
     stateRef.current.formSubmitted = formSubmitted;
     stateRef.current.reducedMotion = reducedMotion;
-  }, [activeSection, continuousProgress, sectionProgress, globalScrollProgress, activeCapability, formSubmitted, reducedMotion]);
+  }, [activeSection, continuousProgress, sectionProgress, globalScrollProgress, activeCapability, activeWorkProject, formSubmitted, reducedMotion]);
 
   useEffect(() => {
     const container = mountRef.current;
@@ -101,42 +94,37 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, isMobile ? 1.5 : 1.75));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = isMobile ? 1.3 : 1.2;
+    renderer.toneMappingExposure = isMobile ? 1.35 : 1.25;
     container.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.FogExp2(COLOR_STOPS[0].fog, isMobile ? 0.045 : 0.052);
+    scene.fog = new THREE.FogExp2(COLOR_STOPS[0].fog, isMobile ? 0.042 : 0.048);
 
-    // Adaptive Camera: wider FOV on mobile so primary objects fill 60-80% of upper visual field
-    const initialFov = isMobile ? (aspect < 0.55 ? 60 : 56) : 48;
+    // Dedicated Camera configuration for Desktop vs Portrait Mobile
+    const initialFov = isMobile ? (aspect < 0.55 ? 58 : 54) : 46;
     const camera = new THREE.PerspectiveCamera(initialFov, aspect, 0.1, 100);
 
-    // Dynamic Camera Spline generator tailored for Desktop vs. Dedicated Mobile
     const getCameraStops = (mobile: boolean, curAspect: number) => {
       if (mobile) {
-        // MOBILE-FIRST: Closer camera distance (Z closer) and Y elevated so 3D objects occupy
-        // 65-80% of visible upper viewport, floating above headlines with razor-sharp presence.
-        const yOffset = curAspect < 0.55 ? 0.5 : 0.38;
-        const zScale = curAspect < 0.55 ? 0.88 : 0.95;
+        // MOBILE-FIRST: Closer camera distance and elevated Y so architectural structures
+        // command 65-80% of upper visual screen with bold silhouettes above open text
+        const yOffset = curAspect < 0.55 ? 0.52 : 0.38;
+        const zScale = curAspect < 0.55 ? 0.85 : 0.92;
         return [
-          { pos: new THREE.Vector3(0, yOffset, 6.4 * zScale), look: new THREE.Vector3(0, yOffset * 0.4, 0) },    // 0: Hero
-          { pos: new THREE.Vector3(0, yOffset, 6.2 * zScale), look: new THREE.Vector3(0, yOffset * 0.3, 0) },    // 1: Problem
+          { pos: new THREE.Vector3(0, yOffset, 6.4 * zScale), look: new THREE.Vector3(0, yOffset * 0.3, 0) },    // 0: Hero
+          { pos: new THREE.Vector3(0, yOffset, 6.2 * zScale), look: new THREE.Vector3(0, yOffset * 0.3, 0) },    // 1: The Idea
           { pos: new THREE.Vector3(0, yOffset, 5.8 * zScale), look: new THREE.Vector3(0, yOffset * 0.2, 0) },    // 2: Capabilities
-          { pos: new THREE.Vector3(0, yOffset, 5.9 * zScale), look: new THREE.Vector3(0, yOffset * 0.2, 0) },    // 3: Architecture
-          { pos: new THREE.Vector3(0, yOffset, 5.6 * zScale), look: new THREE.Vector3(0, yOffset * 0.1, 0) },    // 4: Work
-          { pos: new THREE.Vector3(0, yOffset * 0.5, 3.8 * zScale), look: new THREE.Vector3(0, 0, 0) },          // 5: Morph (Passing Through)
-          { pos: new THREE.Vector3(0, yOffset, 6.2 * zScale), look: new THREE.Vector3(0, yOffset * 0.3, 0) },    // 6: Convergence
+          { pos: new THREE.Vector3(0, yOffset, 5.6 * zScale), look: new THREE.Vector3(0, yOffset * 0.2, 0) },    // 3: Work
+          { pos: new THREE.Vector3(0, yOffset, 6.0 * zScale), look: new THREE.Vector3(0, yOffset * 0.3, 0) },    // 4: Final CTA
         ];
       } else {
-        // DESKTOP: Wide, expansive spatial perspective with 70-80% world presence
+        // DESKTOP: Wide, cinematic architectural perspective with deep spatial volume
         return [
-          { pos: new THREE.Vector3(0.5, 0, 8.4), look: new THREE.Vector3(0.15, 0, 0) },     // 0: Hero
-          { pos: new THREE.Vector3(0.65, -0.08, 7.8), look: new THREE.Vector3(0.2, 0, 0) }, // 1: Problem
-          { pos: new THREE.Vector3(0.7, -0.1, 7.3), look: new THREE.Vector3(0.25, 0, 0) },   // 2: Capabilities
-          { pos: new THREE.Vector3(-0.4, 0.08, 7.4), look: new THREE.Vector3(-0.15, 0, 0) }, // 3: Architecture
-          { pos: new THREE.Vector3(-0.55, 0.1, 6.8), look: new THREE.Vector3(-0.2, 0, 0) },  // 4: Work
-          { pos: new THREE.Vector3(0, 0, 4.2), look: new THREE.Vector3(0, 0, 0) },           // 5: Morph (Passing Through Gap)
-          { pos: new THREE.Vector3(0, 0, 7.6), look: new THREE.Vector3(0, 0, 0) },           // 6: Convergence
+          { pos: new THREE.Vector3(0.65, 0.05, 8.2), look: new THREE.Vector3(0.15, 0, 0) }, // 0: Hero
+          { pos: new THREE.Vector3(0, 0, 7.4), look: new THREE.Vector3(0, 0, 0) },           // 1: The Idea (Centered to inspect morph)
+          { pos: new THREE.Vector3(0.55, 0.05, 7.3), look: new THREE.Vector3(0.18, 0, 0) },  // 2: Capabilities
+          { pos: new THREE.Vector3(-0.5, 0.05, 7.0), look: new THREE.Vector3(-0.15, 0, 0) }, // 3: Work
+          { pos: new THREE.Vector3(0, 0, 7.6), look: new THREE.Vector3(0, 0, 0) },           // 4: Final CTA
         ];
       }
     };
@@ -146,422 +134,374 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
     camera.lookAt(cameraStops[0].look);
 
     // ==========================================
-    // 1. LIGHTING SYSTEM (High-contrast, razor-sharp silhouettes)
+    // 1. LIGHTING (High-definition architectural illumination)
     // ==========================================
-    const ambientLight = new THREE.AmbientLight(0x0e172a, isMobile ? 2.0 : 1.7);
+    const ambientLight = new THREE.AmbientLight(0x0a101f, isMobile ? 2.4 : 1.9);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.PointLight(COLOR_STOPS[0].primary, isMobile ? 4.2 : 3.5, 30);
-    keyLight.position.set(4, 5, 6);
+    const keyLight = new THREE.PointLight(COLOR_STOPS[0].primary, isMobile ? 4.8 : 3.9, 34);
+    keyLight.position.set(4.5, 5.5, 6.0);
     scene.add(keyLight);
 
-    const rimLight = new THREE.PointLight(COLOR_STOPS[0].secondary, isMobile ? 3.4 : 2.8, 26);
-    rimLight.position.set(-5, -4, 4);
+    const rimLight = new THREE.PointLight(COLOR_STOPS[0].secondary, isMobile ? 3.8 : 3.1, 28);
+    rimLight.position.set(-5.0, -4.0, 4.0);
     scene.add(rimLight);
 
-    const overheadLight = new THREE.DirectionalLight(0xffffff, 0.95);
-    overheadLight.position.set(0, 8, 3);
-    scene.add(overheadLight);
+    const topBeamLight = new THREE.DirectionalLight(0xffffff, 1.1);
+    topBeamLight.position.set(0, 8.5, 3.5);
+    scene.add(topBeamLight);
 
     // ==========================================
-    // 2. WORLD 0: HERO MONUMENT (Large Monumental Craft Sculpture)
+    // 2. PROCEDURAL ADAPTIVE ARCHITECTURAL SYSTEM
+    // ONE living machine consisting of articulated modules, structural frames,
+    // mechanical joints, layered surfaces, and dynamic conduits that assemble,
+    // break apart, reorganize, and become something new across every scroll stop.
     // ==========================================
-    const monumentGroup = new THREE.Group();
-    scene.add(monumentGroup);
+    const architecturalRoot = new THREE.Group();
+    scene.add(architecturalRoot);
 
-    // Substantially larger scale for immediate visual impact (Igloo clarity principle)
-    const monumentScale = isMobile ? 1.15 : 1.35;
-    monumentGroup.scale.set(monumentScale, monumentScale, monumentScale);
+    const rootScale = isMobile ? 1.25 : 1.5;
+    architecturalRoot.scale.set(rootScale, rootScale, rootScale);
 
-    const outerGeo = new THREE.IcosahedronGeometry(2.4, isMobile ? 0 : 1);
-    const outerMat = new THREE.MeshStandardMaterial({
-      color: 0x142036,
-      roughness: 0.2,
-      metalness: 0.92,
+    // Shared Architectural Materials
+    const darkMetalMat = new THREE.MeshStandardMaterial({
+      color: 0x0D1628,
+      metalness: 0.95,
+      roughness: 0.16,
+    });
+
+    const frameCyanMat = new THREE.MeshStandardMaterial({
+      color: 0x19D3E6,
+      metalness: 0.88,
+      roughness: 0.22,
       wireframe: true,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.75,
     });
-    const monumentOuter = new THREE.Mesh(outerGeo, outerMat);
-    monumentGroup.add(monumentOuter);
 
-    const innerGeo = new THREE.OctahedronGeometry(1.5, 0);
-    const innerMat = new THREE.MeshStandardMaterial({
-      color: 0x091122,
-      roughness: 0.1,
-      metalness: 0.96,
-      emissive: 0x082B42,
-      emissiveIntensity: 0.45,
-    });
-    const monumentInner = new THREE.Mesh(innerGeo, innerMat);
-    monumentGroup.add(monumentInner);
-
-    const seedGeo = new THREE.SphereGeometry(0.55, 16, 16);
-    const seedMat = new THREE.MeshBasicMaterial({
+    const frameCoralMat = new THREE.MeshStandardMaterial({
       color: 0xFF5722,
+      metalness: 0.85,
+      roughness: 0.25,
       wireframe: true,
+      transparent: true,
+      opacity: 0.75,
+    });
+
+    const solidPanelMat = new THREE.MeshStandardMaterial({
+      color: 0x142036,
+      metalness: 0.9,
+      roughness: 0.2,
       transparent: true,
       opacity: 0.85,
     });
-    const monumentSeed = new THREE.Mesh(seedGeo, seedMat);
-    monumentGroup.add(monumentSeed);
 
-    const ringGeo1 = new THREE.RingGeometry(3.5, 3.54, 64);
-    const ringMat1 = new THREE.MeshBasicMaterial({
-      color: 0x19D3E6,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.4,
-    });
-    const ring1 = new THREE.Mesh(ringGeo1, ringMat1);
-    ring1.rotation.x = Math.PI / 3;
-    monumentGroup.add(ring1);
-
-    const ringGeo2 = new THREE.RingGeometry(4.2, 4.24, 64);
-    const ringMat2 = new THREE.MeshBasicMaterial({
-      color: 0xFF5722,
-      side: THREE.DoubleSide,
-      transparent: true,
-      opacity: 0.35,
-    });
-    const ring2 = new THREE.Mesh(ringGeo2, ringMat2);
-    ring2.rotation.y = Math.PI / 3.8;
-    monumentGroup.add(ring2);
-
-    // ==========================================
-    // 3. WORLD 1: THE PROBLEM (Large Opposing Monoliths & Dynamic Tension)
-    // ==========================================
-    const problemGroup = new THREE.Group();
-    scene.add(problemGroup);
-
-    const problemScale = isMobile ? 1.05 : 1.25;
-    problemGroup.scale.set(problemScale, problemScale, problemScale);
-
-    const redGeo = new THREE.BoxGeometry(2.2, 2.2, 2.2);
-    const redMat = new THREE.MeshStandardMaterial({
-      color: 0xF43F5E,
-      roughness: 0.35,
-      metalness: 0.8,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.7,
-    });
-    const redCube = new THREE.Mesh(redGeo, redMat);
-    redCube.position.set(isMobile ? -1.6 : -2.6, 0.4, 0);
-    problemGroup.add(redCube);
-
-    const blueGeo = new THREE.BoxGeometry(2.2, 2.2, 2.2);
-    const blueMat = new THREE.MeshStandardMaterial({
+    const glassPanelMat = new THREE.MeshPhysicalMaterial({
       color: 0x06B6D4,
-      roughness: 0.15,
-      metalness: 0.9,
-      wireframe: true,
+      metalness: 0.2,
+      roughness: 0.1,
+      transmission: 0.6,
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.65,
     });
-    const blueCube = new THREE.Mesh(blueGeo, blueMat);
-    blueCube.position.set(isMobile ? 1.6 : 2.6, -0.4, 0);
-    problemGroup.add(blueCube);
 
-    const tensionCurve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(isMobile ? -1.6 : -2.6, 0.4, 0),
-      new THREE.Vector3(-0.7, 1.4, 0.6),
-      new THREE.Vector3(0.7, -1.4, -0.6),
-      new THREE.Vector3(isMobile ? 1.6 : 2.6, -0.4, 0),
-    ]);
-    const tensionGeo = new THREE.TubeGeometry(tensionCurve, 36, 0.045, 8, false);
-    const tensionMat = new THREE.MeshBasicMaterial({
-      color: 0xFFFFFF,
-      transparent: true,
-      opacity: 0.5,
-    });
-    const tensionMesh = new THREE.Mesh(tensionGeo, tensionMat);
-    problemGroup.add(tensionMesh);
-
-    // ==========================================
-    // 4. WORLD 2: CAPABILITIES (Large Spatial Constellation)
-    // ==========================================
-    const capabilityGroup = new THREE.Group();
-    scene.add(capabilityGroup);
-
-    const capNodes: THREE.Mesh[] = [];
-    const hexRadius = isMobile ? 2.2 : 3.0;
-    for (let i = 0; i < 6; i++) {
-      const angle = (i / 6) * Math.PI * 2;
-      const x = Math.cos(angle) * hexRadius;
-      const y = Math.sin(angle) * hexRadius * 0.75;
-      const nodeGeo = new THREE.OctahedronGeometry(0.5, 0);
-      const nodeMat = new THREE.MeshStandardMaterial({
-        color: 0x06B6D4,
-        roughness: 0.25,
-        metalness: 0.8,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.85,
-      });
-      const nodeMesh = new THREE.Mesh(nodeGeo, nodeMat);
-      nodeMesh.position.set(x, y, 0);
-      capabilityGroup.add(nodeMesh);
-      capNodes.push(nodeMesh);
+    // ----------------------------------------------------
+    // SYSTEM A: 24 ARTICULATED STRUCTURAL MODULES
+    // These physically move, unlatch, slide, rotate, and reconfigure
+    // ----------------------------------------------------
+    interface ArchModule {
+      group: THREE.Group;
+      frame: THREE.Mesh;
+      panel: THREE.Mesh;
+      joint: THREE.Mesh;
+      // Positional coordinates across 5 stages
+      p0: THREE.Vector3; // Hero (Monument)
+      r0: THREE.Euler;
+      p1Rigid: THREE.Vector3; // The Idea (Standardized rigid orthogonal grid)
+      p1Adapt: THREE.Vector3; // The Idea (Conformed adaptive hugging shape)
+      r1Adapt: THREE.Euler;
+      p2: THREE.Vector3; // Capabilities (6 Ecosystem branches)
+      r2: THREE.Euler;
+      p3Ashtonava: THREE.Vector3; // Work 1 (Sculptural luxury drape atelier)
+      r3Ashtonava: THREE.Euler;
+      p3YesDhobi: THREE.Vector3; // Work 2 (Industrial logistics coordinate matrix)
+      r3YesDhobi: THREE.Euler;
+      p4: THREE.Vector3; // Final CTA (Unified Monolithic Core)
+      r4: THREE.Euler;
+      branchIdx: number; // for capabilities hover
     }
 
-    const focusGeo = new THREE.DodecahedronGeometry(1.0, 0);
-    const focusMat = new THREE.MeshStandardMaterial({
+    const archModules: ArchModule[] = [];
+    const moduleCount = 24;
+
+    const boxGeo = new THREE.BoxGeometry(0.85, 0.45, 0.12);
+    const frameGeo = new THREE.BoxGeometry(0.9, 0.5, 0.14);
+    const jointGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.55, 12);
+
+    for (let i = 0; i < moduleCount; i++) {
+      const modGrp = new THREE.Group();
+
+      const panel = new THREE.Mesh(boxGeo, i % 2 === 0 ? solidPanelMat : glassPanelMat);
+      const frame = new THREE.Mesh(frameGeo, i % 3 === 0 ? frameCoralMat : frameCyanMat);
+      const joint = new THREE.Mesh(jointGeo, darkMetalMat);
+      joint.rotation.z = Math.PI / 2;
+
+      modGrp.add(panel);
+      modGrp.add(frame);
+      modGrp.add(joint);
+      architecturalRoot.add(modGrp);
+
+      // 1. Stage 0: Hero Monument (Geometric layered polyhedral architecture)
+      const uAngle = (i / moduleCount) * Math.PI * 2;
+      const radius0 = 1.9 + (i % 3) * 0.45;
+      const p0 = new THREE.Vector3(
+        Math.cos(uAngle) * radius0,
+        Math.sin(uAngle) * radius0 * 0.85,
+        ((i % 4) - 1.5) * 0.55
+      );
+      const r0 = new THREE.Euler(
+        (i % 3) * 0.2,
+        uAngle,
+        uAngle + Math.PI / 4
+      );
+
+      // 2. Stage 1: The Idea (Starts as rigid locked orthogonal matrix)
+      const col = i % 4;
+      const row = Math.floor(i / 4) % 6;
+      const p1Rigid = new THREE.Vector3(
+        (col - 1.5) * 1.35,
+        (row - 2.5) * 0.75,
+        ((i % 2) - 0.5) * 0.6
+      );
+
+      // Adaptively reshaped (hugging the dynamic flowing workflow spline)
+      const flowT = i / (moduleCount - 1);
+      const waveX = (flowT - 0.5) * 5.2;
+      const waveY = Math.sin(flowT * Math.PI * 2.5) * 1.6;
+      const p1Adapt = new THREE.Vector3(
+        waveX,
+        waveY,
+        Math.cos(flowT * Math.PI * 3) * 0.6
+      );
+      const r1Adapt = new THREE.Euler(
+        0,
+        0,
+        Math.cos(flowT * Math.PI * 2.5) * 0.8
+      );
+
+      // 3. Stage 2: Capabilities (Distributed across 6 functional zones)
+      const bIdx = i % 6; // 0: Web, 1: Mobile, 2: Business, 3: AI, 4: Integrations, 5: Automation
+      let p2 = new THREE.Vector3();
+      let r2 = new THREE.Euler();
+      const subIdx = Math.floor(i / 6); // 0..3
+      if (bIdx === 0) {
+        // Web: Wide connected interface-like architectural surface
+        p2.set(-2.2 + subIdx * 0.6, 1.4, (subIdx - 1.5) * 0.2);
+        r2.set(0, 0.2, 0);
+      } else if (bIdx === 1) {
+        // Mobile: Compact responsive folding structure
+        p2.set(2.2, 1.3 + (subIdx - 1.5) * 0.5, (subIdx - 1.5) * 0.3);
+        r2.set(0.3, 0, 0);
+      } else if (bIdx === 2) {
+        // Business: Interlocking operational structural blocks
+        p2.set(-2.2 + (subIdx % 2) * 0.8, -1.3 + Math.floor(subIdx / 2) * 0.8, 0);
+        r2.set(0, 0, Math.PI / 2);
+      } else if (bIdx === 3) {
+        // AI: Dynamic predictive branching conduit
+        p2.set(2.2 + (subIdx - 1.5) * 0.4, -1.3, (subIdx - 1.5) * 0.5);
+        r2.set(0.4, 0.4, 0);
+      } else if (bIdx === 4) {
+        // Integrations: Bridge connection towers
+        p2.set(0, 2.0 + (subIdx - 1.5) * 0.4, (subIdx - 1.5) * 0.4);
+        r2.set(0, Math.PI / 4, 0);
+      } else {
+        // Automation: Precision assembly line
+        p2.set((subIdx - 1.5) * 1.1, -2.1, 0);
+        r2.set(Math.PI / 4, 0, 0);
+      }
+
+      // 4. Stage 3: Work
+      // Ashtonava (Sculptural luxury couture atelier - smooth organic draping flow)
+      const ashAngle = (i / moduleCount) * Math.PI * 2;
+      const p3Ashtonava = new THREE.Vector3(
+        Math.cos(ashAngle) * 2.2 + (i % 2) * 0.4,
+        (i - moduleCount / 2) * 0.16 + Math.sin(ashAngle * 2) * 0.6,
+        Math.sin(ashAngle) * 1.5
+      );
+      const r3Ashtonava = new THREE.Euler(
+        0.3 * Math.sin(ashAngle),
+        ashAngle,
+        0.4 * Math.cos(ashAngle)
+      );
+
+      // YesDhobi (Industrial logistics matrix - coordinated multi-node routing lines)
+      const p3YesDhobi = new THREE.Vector3(
+        ((i % 6) - 2.5) * 0.95,
+        (Math.floor(i / 6) - 1.5) * 1.1,
+        ((i % 3) - 1) * 0.65
+      );
+      const r3YesDhobi = new THREE.Euler(
+        0,
+        (i % 2 === 0 ? 0 : Math.PI / 2),
+        0
+      );
+
+      // 5. Stage 4: Final CTA (Converged monolithic unified system)
+      const ctaRadius = 1.35 + (i % 3) * 0.35;
+      const ctaPhi = (i / moduleCount) * Math.PI * 2;
+      const p4 = new THREE.Vector3(
+        Math.cos(ctaPhi) * ctaRadius,
+        ((i % 6) - 2.5) * 0.45,
+        Math.sin(ctaPhi) * ctaRadius
+      );
+      const r4 = new THREE.Euler(
+        0,
+        ctaPhi + Math.PI / 2,
+        (i % 2 === 0 ? 0.2 : -0.2)
+      );
+
+      archModules.push({
+        group: modGrp,
+        panel,
+        frame,
+        joint,
+        p0,
+        r0,
+        p1Rigid,
+        p1Adapt,
+        r1Adapt,
+        p2,
+        r2,
+        p3Ashtonava,
+        r3Ashtonava,
+        p3YesDhobi,
+        r3YesDhobi,
+        p4,
+        r4,
+        branchIdx: bIdx,
+      });
+    }
+
+    // ----------------------------------------------------
+    // SYSTEM B: DYNAMIC FLOWING BUSINESS WORKFLOW SPLINE (For Section 2)
+    // The organic business workflow that the rigid architecture adapts around
+    // ----------------------------------------------------
+    const flowPoints: THREE.Vector3[] = [];
+    for (let f = 0; f < 30; f++) {
+      const ft = f / 29;
+      flowPoints.push(
+        new THREE.Vector3(
+          (ft - 0.5) * 5.6,
+          Math.sin(ft * Math.PI * 2.5) * 1.6,
+          Math.cos(ft * Math.PI * 3.0) * 0.7
+        )
+      );
+    }
+    const flowSpline = new THREE.CatmullRomCurve3(flowPoints);
+    const flowGeo = new THREE.TubeGeometry(flowSpline, 64, 0.05, 8, false);
+    const flowMat = new THREE.MeshBasicMaterial({
       color: 0x06B6D4,
-      emissive: 0x06B6D4,
-      emissiveIntensity: 0.4,
-      wireframe: true,
       transparent: true,
-      opacity: 0.75,
+      opacity: 0.85,
     });
-    const focusMesh = new THREE.Mesh(focusGeo, focusMat);
-    capabilityGroup.add(focusMesh);
+    const flowMesh = new THREE.Mesh(flowGeo, flowMat);
+    architecturalRoot.add(flowMesh);
 
-    // ==========================================
-    // 5. WORLD 3: ARCHITECTURE (Colonnade of Pillars)
-    // ==========================================
-    const architectureGroup = new THREE.Group();
-    scene.add(architectureGroup);
-
-    const pillarBeams: THREE.Mesh[] = [];
-    const pillarCount = isMobile ? 3 : 5;
-    for (let i = 0; i < pillarCount; i++) {
-      const beamGeo = new THREE.CylinderGeometry(0.14, 0.14, 6.0, 16);
-      const beamMat = new THREE.MeshStandardMaterial({
-        color: 0x06B6D4,
-        roughness: 0.2,
-        metalness: 0.85,
-        transparent: true,
-        opacity: 0.8,
-      });
-      const beam = new THREE.Mesh(beamGeo, beamMat);
-      const spacing = isMobile ? 1.6 : 1.35;
-      const offset = (pillarCount - 1) * 0.5 * spacing;
-      beam.position.set(i * spacing - offset, 0, 0);
-      architectureGroup.add(beam);
-      pillarBeams.push(beam);
-    }
-
-    const archRingGeo = new THREE.TorusGeometry(3.4, 0.045, 16, 64);
-    const archMat = new THREE.MeshBasicMaterial({ color: 0x8B5CF6, transparent: true, opacity: 0.65 });
-    const archRing = new THREE.Mesh(archRingGeo, archMat);
-    archRing.rotation.x = Math.PI / 2.6;
-    architectureGroup.add(archRing);
-
-    // ==========================================
-    // 6. WORLD 4: PROVEN WORK (Ashtonava Silk & YesDhobi Logistics)
-    // ==========================================
-    const workGroup = new THREE.Group();
-    scene.add(workGroup);
-
-    // Ashtonava Luxury Silk Shimmer Planes (Large, tactile folds)
-    const silkCount = isMobile ? 3 : 5;
-    const silkPlanes: THREE.Mesh[] = [];
-    for (let i = 0; i < silkCount; i++) {
-      const planeGeo = new THREE.PlaneGeometry(isMobile ? 3.4 : 4.4, isMobile ? 5.0 : 6.2, 28, 28);
-      const planeMat = new THREE.MeshStandardMaterial({
-        color: 0xF59E0B,
-        metalness: 0.92,
-        roughness: 0.16,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.45,
-      });
-      const plane = new THREE.Mesh(planeGeo, planeMat);
-      plane.position.set(-1.8 + i * 0.9, 0, -1.0 + i * 0.4);
-      plane.rotation.y = 0.26 * (i - 2);
-      workGroup.add(plane);
-      silkPlanes.push(plane);
-    }
-
-    // YesDhobi logistics conveyor curve
-    const stations = [
-      { name: 'Customer', x: -2.2, y: 1.4 },
-      { name: 'Booking', x: -0.6, y: -0.7 },
-      { name: 'Pickup', x: 1.0, y: 1.2 },
-      { name: 'Processing', x: 2.6, y: -0.5 },
-      { name: 'Delivery', x: 4.2, y: 0.9 },
-    ];
-    const curvePoints = stations.map((s) => new THREE.Vector3(s.x, s.y, -0.6));
-    const logisticsCurve = new THREE.CatmullRomCurve3(curvePoints);
-    const curveGeo = new THREE.TubeGeometry(logisticsCurve, 54, 0.045, 8, false);
-    const curveMat = new THREE.MeshBasicMaterial({ color: 0x10B981, transparent: true, opacity: 0.7 });
-    const curveMesh = new THREE.Mesh(curveGeo, curveMat);
-    workGroup.add(curveMesh);
-
-    const packetGeo = new THREE.SphereGeometry(0.14, 16, 16);
-    const packetMat = new THREE.MeshBasicMaterial({ color: 0x06B6D4 });
-    const packetMesh = new THREE.Mesh(packetGeo, packetMat);
-    workGroup.add(packetMesh);
-
-    // ==========================================
-    // 7. NEW SIGNATURE TRANSITION: THE DIMENSIONAL WORLD MORPH (SHARED ARCHITECTURE)
-    // ==========================================
-    // Replaces the black hole with a majestic deconstructing and reassembling
-    // architectural structure. Previous world physically becomes the next world.
-    const morphGroup = new THREE.Group();
-    scene.add(morphGroup);
-
-    // Twin monumental portals / architectural wings that part as camera moves through
-    const wingGeo = new THREE.BoxGeometry(0.3, 5.8, 0.3);
-    const wingMat = new THREE.MeshStandardMaterial({
+    // ----------------------------------------------------
+    // SYSTEM C: 8 CANTILEVER STRUCTURAL BEAMS (Connective Architecture)
+    // ----------------------------------------------------
+    const beams: THREE.Mesh[] = [];
+    const beamGeo = new THREE.CylinderGeometry(0.04, 0.04, 4.4, 8);
+    const archBeamMat = new THREE.MeshStandardMaterial({
       color: 0x19D3E6,
       metalness: 0.9,
-      roughness: 0.15,
-      wireframe: true,
-      transparent: true,
-      opacity: 0.75,
-    });
-
-    // Left Portal Wing (Columns + horizontal cantilever lintels)
-    const leftWing = new THREE.Group();
-    const leftCol1 = new THREE.Mesh(wingGeo, wingMat);
-    leftCol1.position.set(-1.6, 0, 0);
-    leftWing.add(leftCol1);
-    const leftCol2 = new THREE.Mesh(wingGeo, wingMat);
-    leftCol2.position.set(-2.4, 0, -0.5);
-    leftWing.add(leftCol2);
-    morphGroup.add(leftWing);
-
-    // Right Portal Wing
-    const rightWing = new THREE.Group();
-    const rightCol1 = new THREE.Mesh(wingGeo, wingMat);
-    rightCol1.position.set(1.6, 0, 0);
-    rightWing.add(rightCol1);
-    const rightCol2 = new THREE.Mesh(wingGeo, wingMat);
-    rightCol2.position.set(2.4, 0, -0.5);
-    rightWing.add(rightCol2);
-    morphGroup.add(rightWing);
-
-    // Cantilever Overhead Lintel (Parting upwards during pass-through)
-    const lintelGeo = new THREE.BoxGeometry(4.8, 0.28, 0.28);
-    const lintelMat = new THREE.MeshStandardMaterial({
-      color: 0xFF5722,
-      metalness: 0.85,
       roughness: 0.2,
-      wireframe: true,
       transparent: true,
-      opacity: 0.75,
+      opacity: 0.7,
     });
-    const lintelBeam = new THREE.Mesh(lintelGeo, lintelMat);
-    lintelBeam.position.set(0, 2.9, 0);
-    morphGroup.add(lintelBeam);
 
-    // 6 Flowing 3D Extruded Architectural Ribbons that sweep past the camera
-    const ribbonCount = isMobile ? 4 : 6;
-    const ribbonMeshes: THREE.Mesh[] = [];
-    const ribbonMaterials: THREE.MeshBasicMaterial[] = [];
-
-    for (let r = 0; r < ribbonCount; r++) {
-      const angle = (r / ribbonCount) * Math.PI * 2;
-      const radius = 2.4 + (r % 2) * 0.8;
-      // Flowing path extending along Z through the camera viewport
-      const ribbonPath = new THREE.CatmullRomCurve3([
-        new THREE.Vector3(Math.cos(angle) * radius * 1.5, Math.sin(angle) * radius * 0.8, -4.0),
-        new THREE.Vector3(Math.cos(angle + 0.6) * radius * 1.2, Math.sin(angle + 0.6) * radius * 0.7, -1.0),
-        new THREE.Vector3(Math.cos(angle + 1.2) * (radius + 0.8), Math.sin(angle + 1.2) * (radius + 0.6), 2.5),
-        new THREE.Vector3(Math.cos(angle + 1.8) * (radius + 1.6), Math.sin(angle + 1.8) * (radius + 1.2), 6.0),
-      ]);
-
-      const rGeo = new THREE.TubeGeometry(ribbonPath, 48, 0.04, 8, false);
-      const rMat = new THREE.MeshBasicMaterial({
-        color: r % 2 === 0 ? 0x19D3E6 : 0xFF5722,
-        transparent: true,
-        opacity: 0.7,
-      });
-      const rMesh = new THREE.Mesh(rGeo, rMat);
-      morphGroup.add(rMesh);
-      ribbonMeshes.push(rMesh);
-      ribbonMaterials.push(rMat);
+    for (let b = 0; b < 8; b++) {
+      const beam = new THREE.Mesh(beamGeo, archBeamMat);
+      architecturalRoot.add(beam);
+      beams.push(beam);
     }
 
-    // Internal crystalline reassembly core (Revealed inside the structure during pass-through)
-    const morphCoreGeo = new THREE.IcosahedronGeometry(1.2, 1);
-    const morphCoreMat = new THREE.MeshStandardMaterial({
-      color: 0x19D3E6,
-      emissive: 0x06B6D4,
-      emissiveIntensity: 0.5,
+    // ----------------------------------------------------
+    // SYSTEM D: YESDHOBI OPERATIONAL TRANSIT NODES & CONDUITS
+    // ----------------------------------------------------
+    const transitHubs: THREE.Mesh[] = [];
+    const hubStations = [
+      { x: -2.4, y: 0.9, z: -0.3 },
+      { x: -0.8, y: -0.8, z: 0.2 },
+      { x: 0.8, y: 0.8, z: -0.2 },
+      { x: 2.2, y: -0.7, z: 0.3 },
+    ];
+    const hubGeo = new THREE.OctahedronGeometry(0.22, 0);
+    const hubMat = new THREE.MeshBasicMaterial({ color: 0x10B981 });
+    hubStations.forEach((hs) => {
+      const hm = new THREE.Mesh(hubGeo, hubMat);
+      hm.position.set(hs.x, hs.y, hs.z);
+      architecturalRoot.add(hm);
+      transitHubs.push(hm);
+    });
+
+    // Coordinated transit packet
+    const transitPacketGeo = new THREE.BoxGeometry(0.18, 0.18, 0.18);
+    const transitPacketMat = new THREE.MeshBasicMaterial({ color: 0xFF5722 });
+    const transitPacket = new THREE.Mesh(transitPacketGeo, transitPacketMat);
+    architecturalRoot.add(transitPacket);
+
+    // ----------------------------------------------------
+    // SYSTEM E: ASHTONAVA LUXURY ARCHITECTURAL SCULPTURAL SILK MESH
+    // ----------------------------------------------------
+    const ashSculptGeo = new THREE.TorusKnotGeometry(1.6, 0.32, 70, 16, 2, 3);
+    const ashSculptMat = new THREE.MeshStandardMaterial({
+      color: 0xF59E0B,
+      metalness: 0.96,
+      roughness: 0.14,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.6,
+    });
+    const ashSculpt = new THREE.Mesh(ashSculptGeo, ashSculptMat);
+    architecturalRoot.add(ashSculpt);
+
+    // ----------------------------------------------------
+    // SYSTEM F: MONOLITHIC CONVERGED CORE (For Final CTA)
+    // ----------------------------------------------------
+    const monolithGeo = new THREE.IcosahedronGeometry(1.35, 1);
+    const monolithMat = new THREE.MeshStandardMaterial({
+      color: 0xFF5722,
+      emissive: 0x9A3412,
+      emissiveIntensity: 0.45,
+      metalness: 0.92,
+      roughness: 0.18,
       wireframe: true,
       transparent: true,
       opacity: 0.8,
     });
-    const morphCore = new THREE.Mesh(morphCoreGeo, morphCoreMat);
-    morphGroup.add(morphCore);
+    const monolithCore = new THREE.Mesh(monolithGeo, monolithMat);
+    architecturalRoot.add(monolithCore);
 
-    // ==========================================
-    // 8. WORLD 6: CONVERGENCE (Luminous Ordered Harmonic Core)
-    // ==========================================
-    const convergenceGroup = new THREE.Group();
-    scene.add(convergenceGroup);
-
-    const convRingGeo = new THREE.TorusGeometry(3.0, 0.035, 16, 80);
-    const convRingMat = new THREE.MeshBasicMaterial({ color: 0xFF5722, transparent: true, opacity: 0.5 });
-    const convRing = new THREE.Mesh(convRingGeo, convRingMat);
-    convergenceGroup.add(convRing);
-
-    const convRingGeo2 = new THREE.TorusGeometry(4.0, 0.03, 16, 80);
-    const convRingMat2 = new THREE.MeshBasicMaterial({ color: 0xF59E0B, transparent: true, opacity: 0.4 });
-    const convRing2 = new THREE.Mesh(convRingGeo2, convRingMat2);
-    convRing2.rotation.x = Math.PI / 3;
-    convergenceGroup.add(convRing2);
-
-    const convRingGeo3 = new THREE.TorusGeometry(5.0, 0.025, 16, 80);
-    const convRingMat3 = new THREE.MeshBasicMaterial({ color: 0x06B6D4, transparent: true, opacity: 0.3 });
-    const convRing3 = new THREE.Mesh(convRingGeo3, convRingMat3);
-    convRing3.rotation.y = Math.PI / 3;
-    convergenceGroup.add(convRing3);
-
-    const coreGeo = new THREE.IcosahedronGeometry(1.2, 1);
-    const coreMat = new THREE.MeshStandardMaterial({
-      color: 0xFF5722,
-      emissive: 0xFF5722,
-      emissiveIntensity: 0.45,
-      wireframe: true,
+    // Harmonic alignment ring around monolith
+    const alignRingGeo = new THREE.TorusGeometry(2.6, 0.035, 16, 64);
+    const alignRingMat = new THREE.MeshBasicMaterial({
+      color: 0x19D3E6,
       transparent: true,
-      opacity: 0.7,
+      opacity: 0.5,
     });
-    const coreMesh = new THREE.Mesh(coreGeo, coreMat);
-    convergenceGroup.add(coreMesh);
+    const alignRing = new THREE.Mesh(alignRingGeo, alignRingMat);
+    alignRing.rotation.x = Math.PI / 3;
+    architecturalRoot.add(alignRing);
 
-    // ==========================================
-    // 9. AMBIENT BACKGROUND PARTICLES (Restrained, Text Safe Zone Enabled)
-    // ==========================================
-    const bgParticleCount = isMobile ? 35 : 85;
-    const bgGeo = new THREE.BufferGeometry();
-    const bgPos = new Float32Array(bgParticleCount * 3);
-    const bgBasePos = new Float32Array(bgParticleCount * 3);
-
-    for (let i = 0; i < bgParticleCount; i++) {
-      const px = (Math.random() - 0.5) * 22;
-      const py = (Math.random() - 0.5) * 16;
-      const pz = (Math.random() - 0.5) * 14 - 2;
-      bgPos[i * 3] = px;
-      bgPos[i * 3 + 1] = py;
-      bgPos[i * 3 + 2] = pz;
-      bgBasePos[i * 3] = px;
-      bgBasePos[i * 3 + 1] = py;
-      bgBasePos[i * 3 + 2] = pz;
-    }
-    bgGeo.setAttribute('position', new THREE.BufferAttribute(bgPos, 3));
-
-    const bgMat = new THREE.PointsMaterial({
-      size: isMobile ? 0.04 : 0.035,
-      color: 0x06B6D4,
-      transparent: true,
-      opacity: isMobile ? 0.35 : 0.25,
-      blending: THREE.AdditiveBlending,
-    });
-    const bgParticles = new THREE.Points(bgGeo, bgMat);
-    scene.add(bgParticles);
-
-    // Mouse tracking with soft damping
+    // Mouse movement tracker
     const handleMouseMove = (e: MouseEvent) => {
       stateRef.current.targetMouseX = (e.clientX / window.innerWidth) * 2 - 1;
       stateRef.current.targetMouseY = -(e.clientY / window.innerHeight) * 2 + 1;
     };
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
-    // Viewport resize & adaptive composition handler
+    // Resize handler
     const handleResize = () => {
       if (!container) return;
       width = container.clientWidth || window.innerWidth;
@@ -573,7 +513,7 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
       stateRef.current.aspect = newAspect;
 
       camera.aspect = newAspect;
-      camera.fov = newMobile ? (newAspect < 0.55 ? 60 : 56) : 48;
+      camera.fov = newMobile ? (newAspect < 0.55 ? 58 : 54) : 46;
       camera.updateProjectionMatrix();
 
       cameraStops = getCameraStops(newMobile, newAspect);
@@ -584,19 +524,22 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
     window.addEventListener('resize', handleResize);
 
     // ==========================================
-    // 10. MAIN ANIMATION & CONTINUOUS CAMERA LOOP
+    // 3. MAIN ANIMATION & REBUILDING ARCHITECTURE ENGINE
     // ==========================================
     let animationFrameId: number;
-    let clock = new THREE.Clock();
+    const clock = new THREE.Clock();
 
     const currentCamPos = camera.position.clone();
     const currentLookAt = new THREE.Vector3(0, 0, 0);
     const targetCamPos = new THREE.Vector3();
     const targetLookAt = new THREE.Vector3();
+
     const currentPrimary = new THREE.Color(COLOR_STOPS[0].primary);
     const currentSecondary = new THREE.Color(COLOR_STOPS[0].secondary);
     const currentFog = new THREE.Color(COLOR_STOPS[0].fog);
-    const tempVec = new THREE.Vector3();
+
+    const tempPosA = new THREE.Vector3();
+    const tempPosB = new THREE.Vector3();
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
@@ -604,19 +547,26 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
       const elapsed = clock.getElapsedTime();
       const mobile = stateRef.current.isMobile;
 
+      // Smooth entrance load progression (0 -> 1)
+      if (stateRef.current.loadProgress < 1.0) {
+        stateRef.current.loadProgress = Math.min(1.0, stateRef.current.loadProgress + 0.015);
+      }
+      const loadProg = stateRef.current.loadProgress;
+
       // Mouse damping
       stateRef.current.mouseX += (stateRef.current.targetMouseX - stateRef.current.mouseX) * 0.05;
       stateRef.current.mouseY += (stateRef.current.targetMouseY - stateRef.current.mouseY) * 0.05;
       const mx = stateRef.current.mouseX;
       const my = stateRef.current.mouseY;
 
-      // Smooth continuous scroll progress interpolation across 7 worlds (0.0 to 6.0)
+      // Scroll progress momentum across 5 stops (0.0 to 4.0)
       stateRef.current.currentProgress +=
-        (stateRef.current.targetProgress - stateRef.current.currentProgress) * 0.08;
-      const u = Math.max(0, Math.min(stateRef.current.currentProgress, 6.0));
+        (stateRef.current.targetProgress - stateRef.current.currentProgress) * 0.075;
+      const u = Math.max(0, Math.min(stateRef.current.currentProgress, 4.0));
       const cap = stateRef.current.activeCapability;
+      const activeWork = stateRef.current.activeWorkProject;
 
-      // 1. Spline Camera Calculation across 7 stops
+      // 1. Camera Spline across 5 stops with architectural inspection feel
       const k = Math.min(Math.floor(u), cameraStops.length - 2);
       const t = u - k;
       const smoothT = t * t * (3 - 2 * t);
@@ -627,20 +577,9 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
       targetCamPos.lerpVectors(stopA.pos, stopB.pos, smoothT);
       targetLookAt.lerpVectors(stopA.look, stopB.look, smoothT);
 
-      // Parallax mouse damping
-      targetCamPos.x += mx * (mobile ? 0.15 : 0.35);
-      targetCamPos.y += my * (mobile ? 0.12 : 0.25);
-
-      // PASSING THROUGH STRUCTURE MOMENT (At transition between World 4 and World 6, peaking at World 5)
-      // When approaching the Transformation section (u = 4.6 to 5.4), camera glides directly
-      // forward through the parting architectural gate!
-      let morphIntensity = 0;
-      if (u >= 4.5 && u <= 5.5) {
-        const morphNorm = (u - 4.5) / 1.0;
-        morphIntensity = Math.sin(morphNorm * Math.PI);
-        // Camera glides through structure opening
-        targetCamPos.z -= morphIntensity * (mobile ? 1.6 : 2.4);
-      }
+      // Subtle parallax response
+      targetCamPos.x += mx * (mobile ? 0.12 : 0.28);
+      targetCamPos.y += my * (mobile ? 0.08 : 0.2);
 
       currentCamPos.lerp(targetCamPos, 0.08);
       camera.position.copy(currentCamPos);
@@ -648,25 +587,12 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
       currentLookAt.lerp(targetLookAt, 0.06);
       camera.lookAt(currentLookAt);
 
-      // 2. Continuous Color Transitions
+      // 2. Color transitions across materials, lighting, and environmental tone
       const colorA = COLOR_STOPS[k];
       const colorB = COLOR_STOPS[k + 1];
       currentPrimary.lerpColors(new THREE.Color(colorA.primary), new THREE.Color(colorB.primary), smoothT);
       currentSecondary.lerpColors(new THREE.Color(colorA.secondary), new THREE.Color(colorB.secondary), smoothT);
       currentFog.lerpColors(new THREE.Color(colorA.fog), new THREE.Color(colorB.fog), smoothT);
-
-      // Endless Living Ambient Pulse at Convergence (u >= 5.6)
-      if (u >= 5.6) {
-        const cyclePhase = (elapsed * 0.06) % 1.0;
-        const c1 = new THREE.Color(0xFF5722);
-        const c2 = new THREE.Color(0xF59E0B);
-        const c3 = new THREE.Color(0x06B6D4);
-        let living = c1;
-        if (cyclePhase < 0.33) living = c1.clone().lerp(c2, cyclePhase / 0.33);
-        else if (cyclePhase < 0.66) living = c2.clone().lerp(c3, (cyclePhase - 0.33) / 0.33);
-        else living = c3.clone().lerp(c1, (cyclePhase - 0.66) / 0.34);
-        currentPrimary.lerp(living, 0.04);
-      }
 
       keyLight.color.copy(currentPrimary);
       rimLight.color.copy(currentSecondary);
@@ -674,181 +600,197 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
         scene.fog.color.copy(currentFog);
       }
 
-      // 3. Overlapping World Weights
-      const getWeight = (centerIdx: number, spread = 0.95) => {
-        const dist = Math.abs(u - centerIdx);
-        if (dist >= spread) return 0;
-        return 0.5 * (1 + Math.cos((dist / spread) * Math.PI));
-      };
+      // Root architectural living kinetic rhythm
+      architecturalRoot.rotation.y = elapsed * 0.03 + mx * 0.08;
 
-      const w0 = getWeight(0); // Hero
-      const w1 = getWeight(1); // Problem
-      const w2 = getWeight(2); // Capabilities
-      const w3 = getWeight(3); // Architecture
-      const w4 = getWeight(4); // Work
-      const w5 = getWeight(5); // Transformation Morph
-      const w6 = getWeight(6); // Convergence
+      // 3. PROCEDURAL PHYSICAL REASSEMBLY OF ALL 24 MODULES
+      // Depending on u, components compute their target location and orientation
+      archModules.forEach((m, idx) => {
+        let targetPos = new THREE.Vector3();
+        let targetRot = new THREE.Euler();
 
-      // Group Visibilities
-      monumentGroup.visible = w0 > 0.01;
-      problemGroup.visible = w1 > 0.01;
-      capabilityGroup.visible = w2 > 0.01;
-      architectureGroup.visible = w3 > 0.01;
-      workGroup.visible = w4 > 0.01;
-      morphGroup.visible = (w4 > 0.01 || w5 > 0.01 || morphIntensity > 0.01);
-      convergenceGroup.visible = w6 > 0.01;
+        if (u < 1.0) {
+          // --- HERO (0.0) -> THE IDEA (1.0) ---
+          // Hero assembly effect: initial spread based on loadProg
+          const spreadFactor = (1 - loadProg) * 2.5;
+          const heroDispersed = m.p0.clone().add(
+            new THREE.Vector3(
+              Math.sin(idx + 1) * spreadFactor,
+              Math.cos(idx + 2) * spreadFactor,
+              Math.sin(idx * 3) * spreadFactor
+            )
+          );
 
-      // 4. Autonomous Restrained Movement & Interactive Behaviors
+          // Moving from Hero monument to The Idea (rigid modular grid)
+          targetPos.lerpVectors(heroDispersed, m.p1Rigid, smoothT);
+          targetRot.x = THREE.MathUtils.lerp(m.r0.x, 0, smoothT);
+          targetRot.y = THREE.MathUtils.lerp(m.r0.y, 0, smoothT);
+          targetRot.z = THREE.MathUtils.lerp(m.r0.z, 0, smoothT);
+        } else if (u < 2.0) {
+          // --- THE IDEA (1.0 -> 2.0): RESHAPING DEMONSTRATION ---
+          // u: 1.0 to 1.5 -> Rigid structure resists, then unlatches and wraps snugly around business workflow!
+          // u: 1.5 to 2.0 -> Transitioning into Capabilities ecosystem
+          const ideaMorphProgress = Math.min(Math.max((u - 1.0) / 0.6, 0), 1);
+          const ideaSmooth = ideaMorphProgress * ideaMorphProgress * (3 - 2 * ideaMorphProgress);
 
-      // World 0: Hero Monument
-      if (monumentGroup.visible) {
-        monumentOuter.rotation.x += 0.0025;
-        monumentOuter.rotation.y += 0.004;
-        monumentInner.rotation.x -= 0.005;
-        monumentInner.rotation.y -= 0.007;
-        monumentSeed.rotation.y += 0.01;
-        ring1.rotation.z += 0.0035;
-        ring2.rotation.z -= 0.0035;
+          // Morph from rigid orthogonal grid into conforming adaptive hull
+          const currentIdeaPos = tempPosA.lerpVectors(m.p1Rigid, m.p1Adapt, ideaSmooth);
+          const currentIdeaRot = new THREE.Euler(
+            0,
+            0,
+            THREE.MathUtils.lerp(0, m.r1Adapt.z, ideaSmooth)
+          );
 
-        outerMat.opacity = 0.65 * w0;
-        innerMat.opacity = 0.9 * w0;
-        seedMat.opacity = 0.85 * w0;
-        ringMat1.opacity = 0.4 * w0;
-        ringMat2.opacity = 0.35 * w0;
-      }
+          if (u <= 1.5) {
+            targetPos.copy(currentIdeaPos);
+            targetRot.copy(currentIdeaRot);
+          } else {
+            // Morph from adapted idea into Capabilities ecosystem
+            const capTransition = (u - 1.5) / 0.5;
+            const capSmooth = capTransition * capTransition * (3 - 2 * capTransition);
+            targetPos.lerpVectors(m.p1Adapt, m.p2, capSmooth);
+            targetRot.x = THREE.MathUtils.lerp(m.r1Adapt.x, m.r2.x, capSmooth);
+            targetRot.y = THREE.MathUtils.lerp(m.r1Adapt.y, m.r2.y, capSmooth);
+            targetRot.z = THREE.MathUtils.lerp(m.r1Adapt.z, m.r2.z, capSmooth);
+          }
+        } else if (u < 3.0) {
+          // --- CAPABILITIES (2.0) -> WORK (3.0) ---
+          // Physical disassembly and reassembly into Ashtonava or YesDhobi
+          const isAshtonava = activeWork === 'ashtonava';
+          const workTargetPos = isAshtonava ? m.p3Ashtonava : m.p3YesDhobi;
+          const workTargetRot = isAshtonava ? m.r3Ashtonava : m.r3YesDhobi;
 
-      // World 1: Problem
-      if (problemGroup.visible) {
-        redCube.rotation.x += 0.006;
-        redCube.rotation.y += 0.005;
-        blueCube.rotation.x -= 0.005;
-        blueCube.rotation.y -= 0.006;
-        tensionMesh.rotation.z = Math.sin(elapsed * 0.5) * 0.05;
+          // Transition: precise components unlock and travel controlled trajectories
+          // Mid-transit flight elevation
+          const midArc = Math.sin(smoothT * Math.PI) * 0.8;
+          targetPos.lerpVectors(m.p2, workTargetPos, smoothT);
+          targetPos.y += (idx % 2 === 0 ? midArc : -midArc * 0.5);
 
-        redMat.opacity = 0.7 * w1;
-        blueMat.opacity = 0.7 * w1;
-        tensionMat.opacity = 0.5 * w1;
-      }
-
-      // World 2: Capabilities
-      if (capabilityGroup.visible) {
-        capNodes.forEach((node) => {
-          node.rotation.x += 0.008;
-          node.rotation.y += 0.012;
-          const nodeMat = node.material as THREE.MeshStandardMaterial;
-          nodeMat.opacity = 0.85 * w2;
-        });
-
-        focusMesh.rotation.x -= 0.004;
-        focusMesh.rotation.y -= 0.006;
-        focusMat.opacity = 0.75 * w2;
-
-        if (cap) {
-          focusMesh.scale.lerp(new THREE.Vector3(1.5, 1.5, 1.5), 0.1);
-          if (cap === 'ai-products') focusMat.color.setHex(0x8B5CF6);
-          else if (cap === 'mobile-products') focusMat.color.setHex(0xFF5722);
-          else if (cap === 'business-systems') focusMat.color.setHex(0x2563EB);
-          else focusMat.color.setHex(0x06B6D4);
+          targetRot.x = THREE.MathUtils.lerp(m.r2.x, workTargetRot.x, smoothT);
+          targetRot.y = THREE.MathUtils.lerp(m.r2.y, workTargetRot.y, smoothT);
+          targetRot.z = THREE.MathUtils.lerp(m.r2.z, workTargetRot.z, smoothT);
         } else {
-          focusMesh.scale.lerp(new THREE.Vector3(1, 1, 1), 0.05);
-          focusMat.color.setHex(0x06B6D4);
+          // --- WORK (3.0) -> FINAL CTA (4.0) ---
+          // All components converge into ONE unified, stable, running monolithic digital architecture
+          const isAshtonava = activeWork === 'ashtonava';
+          const currentWorkPos = isAshtonava ? m.p3Ashtonava : m.p3YesDhobi;
+          const currentWorkRot = isAshtonava ? m.r3Ashtonava : m.r3YesDhobi;
+
+          targetPos.lerpVectors(currentWorkPos, m.p4, smoothT);
+          targetRot.x = THREE.MathUtils.lerp(currentWorkRot.x, m.r4.x, smoothT);
+          targetRot.y = THREE.MathUtils.lerp(currentWorkRot.y, m.r4.y, smoothT);
+          targetRot.z = THREE.MathUtils.lerp(currentWorkRot.z, m.r4.z, smoothT);
         }
-      }
 
-      // World 3: Architecture
-      if (architectureGroup.visible) {
-        pillarBeams.forEach((b, idx) => {
-          const bMat = b.material as THREE.MeshStandardMaterial;
-          bMat.opacity = 0.8 * w3;
-          b.rotation.z = (idx % 2 === 0 ? 0.06 : -0.06) + Math.sin(elapsed * 0.35 + idx) * 0.018;
-        });
-        archMat.opacity = 0.65 * w3;
-      }
+        // Apply smooth module translation & rotation
+        m.group.position.lerp(targetPos, 0.08);
+        m.group.rotation.x = THREE.MathUtils.lerp(m.group.rotation.x, targetRot.x, 0.08);
+        m.group.rotation.y = THREE.MathUtils.lerp(m.group.rotation.y, targetRot.y, 0.08);
+        m.group.rotation.z = THREE.MathUtils.lerp(m.group.rotation.z, targetRot.z, 0.08);
 
-      // World 4: Work (Silk & Logistics)
-      if (workGroup.visible) {
-        silkPlanes.forEach((p, idx) => {
-          p.position.y += Math.sin(elapsed * 0.7 + idx) * 0.003;
-          p.rotation.y = 0.26 * (idx - 2) + Math.sin(elapsed * 0.35 + idx) * 0.04;
-          const mat = p.material as THREE.MeshStandardMaterial;
-          mat.opacity = 0.45 * w4;
-        });
+        // Independent micro-articulation (joints rotating, panels breathing)
+        m.joint.rotation.x = elapsed * 0.4 + idx;
+        m.panel.position.z = Math.sin(elapsed * 1.2 + idx) * 0.02;
 
-        curveMat.opacity = 0.7 * w4;
-        const packetT = (elapsed * 0.3) % 1;
-        const pt = logisticsCurve.getPoint(packetT);
-        packetMesh.position.copy(pt);
-      }
-
-      // World 5: SIGNATURE DIMENSIONAL WORLD MORPH (Deconstruct, Part & Reassemble)
-      if (morphGroup.visible) {
-        const morphWeight = Math.max(w5, morphIntensity, w4 * 0.85);
-
-        // A. Portals Part Outward (Creating the gap camera flies through)
-        const partDistance = morphWeight * (mobile ? 1.8 : 2.8);
-        leftWing.position.x = -partDistance;
-        rightWing.position.x = partDistance;
-
-        // B. Cantilever Lintel rises and pivots
-        lintelBeam.position.y = 2.9 + morphWeight * 1.5;
-        lintelBeam.rotation.z = Math.sin(elapsed * 0.4) * 0.06;
-
-        wingMat.opacity = 0.75 * morphWeight;
-        lintelMat.opacity = 0.75 * morphWeight;
-
-        // C. Flowing 3D Ribbons sweep past the camera
-        ribbonMeshes.forEach((rm, idx) => {
-          rm.rotation.z = elapsed * 0.15 + (idx * Math.PI) / ribbonCount;
-          const rMat = ribbonMaterials[idx];
-          rMat.opacity = 0.65 * morphWeight;
-        });
-
-        // D. Internal Reassembly Core
-        morphCore.rotation.x += 0.006;
-        morphCore.rotation.y += 0.01;
-        morphCore.scale.setScalar(0.8 + morphWeight * 0.6);
-        morphCoreMat.opacity = 0.8 * morphWeight;
-      }
-
-      // World 6: Convergence Core
-      if (convergenceGroup.visible) {
-        convRing.rotation.z += 0.005;
-        convRingMat.opacity = 0.5 * w6;
-
-        convRing2.rotation.y += 0.007;
-        convRing2.rotation.x += 0.0035;
-        convRingMat2.opacity = 0.4 * w6;
-
-        convRing3.rotation.z -= 0.0045;
-        convRingMat3.opacity = 0.3 * w6;
-
-        coreMesh.rotation.x += 0.007;
-        coreMesh.rotation.y += 0.01;
-        coreMat.opacity = 0.7 * w6;
-      }
-
-      // 5. RESTRAINED AMBIENT PARTICLES & DYNAMIC TEXT SAFE ZONE
-      const bgPosAttr = bgGeo.attributes.position as THREE.BufferAttribute;
-      const bgPosArr = bgPosAttr.array as Float32Array;
-
-      for (let i = 0; i < bgParticleCount; i++) {
-        bgBasePos[i * 3 + 1] += 0.0018;
-        if (bgBasePos[i * 3 + 1] > 8) bgBasePos[i * 3 + 1] = -8;
-
-        tempVec.set(bgBasePos[i * 3], bgBasePos[i * 3 + 1], bgBasePos[i * 3 + 2]);
-        tempVec.project(camera);
-
-        // Safe zone avoidance: steer away from typography region
-        const inSafeZone = tempVec.x > -0.85 && tempVec.x < 0.25 && tempVec.y > -0.75 && tempVec.y < 0.75;
-        if (inSafeZone) {
-          bgPosArr[i * 3] += (bgBasePos[i * 3] + 2.8 - bgPosArr[i * 3]) * 0.05;
+        // Capabilities hover interaction: highlight the hovered functional branch
+        if (u >= 1.5 && u <= 2.5 && cap) {
+          const capMap: Record<string, number> = {
+            'web-apps': 0, 'Custom Web Applications': 0,
+            'mobile-products': 1, 'Mobile Products': 1,
+            'business-systems': 2, 'Internal Business Systems': 2,
+            'ai-products': 3, 'Custom AI Workflows & Systems': 3,
+            'integrations': 4,
+            'automation': 5,
+          };
+          const targetBranch = capMap[cap];
+          if (m.branchIdx === targetBranch) {
+            m.group.scale.lerp(new THREE.Vector3(1.28, 1.28, 1.28), 0.1);
+          } else {
+            m.group.scale.lerp(new THREE.Vector3(0.9, 0.9, 0.9), 0.08);
+          }
         } else {
-          bgPosArr[i * 3] += (bgBasePos[i * 3] - bgPosArr[i * 3]) * 0.05;
+          m.group.scale.lerp(new THREE.Vector3(1.0, 1.0, 1.0), 0.06);
         }
-        bgPosArr[i * 3 + 1] = bgBasePos[i * 3 + 1];
-        bgPosArr[i * 3 + 2] = bgBasePos[i * 3 + 2];
+      });
+
+      // 4. BUSINESS WORKFLOW SPLINE BEHAVIOR (Section 2)
+      // Visible primarily during Section 2 (u from 0.7 to 2.0)
+      const flowWeight = Math.max(0, 1 - Math.abs(u - 1.35) / 0.85);
+      flowMesh.visible = flowWeight > 0.01;
+      if (flowMesh.visible) {
+        flowMat.opacity = 0.85 * flowWeight;
+        flowMesh.position.y = Math.sin(elapsed * 1.5) * 0.08;
       }
-      bgPosAttr.needsUpdate = true;
+
+      // 5. CANTILEVER BEAMS (Dynamic connections between modular nodes)
+      beams.forEach((b, bIdx) => {
+        // Connect pairs of modules
+        const modA = archModules[bIdx * 2];
+        const modB = archModules[(bIdx * 2 + 3) % moduleCount];
+        if (modA && modB) {
+          const pA = modA.group.position;
+          const pB = modB.group.position;
+          b.position.copy(pA).add(pB).multiplyScalar(0.5);
+          b.quaternion.setFromUnitVectors(
+            new THREE.Vector3(0, 1, 0),
+            pB.clone().sub(pA).normalize()
+          );
+          const dist = pA.distanceTo(pB);
+          b.scale.set(1, dist / 4.4, 1);
+        }
+      });
+
+      // 6. ASHTONAVA & YESDHOBI DEDICATED ARCHITECTURAL BEHAVIORS (Section 4)
+      const workWeight = Math.max(0, 1 - Math.abs(u - 3.0) / 0.85);
+      const isAshtonava = activeWork === 'ashtonava';
+
+      ashSculpt.visible = workWeight > 0.01 && isAshtonava;
+      if (ashSculpt.visible) {
+        ashSculpt.rotation.x = elapsed * 0.15;
+        ashSculpt.rotation.y = elapsed * 0.2;
+        ashSculptMat.opacity = 0.55 * workWeight;
+      }
+
+      const showLogistics = workWeight > 0.01 && !isAshtonava;
+      transitHubs.forEach((th) => {
+        th.visible = showLogistics;
+        if (showLogistics) {
+          th.rotation.y += 0.02;
+          th.rotation.x += 0.01;
+        }
+      });
+
+      transitPacket.visible = showLogistics;
+      if (showLogistics) {
+        const pCycle = (elapsed * 0.6) % hubStations.length;
+        const currentIdx = Math.floor(pCycle);
+        const nextIdx = (currentIdx + 1) % hubStations.length;
+        const subT = pCycle - currentIdx;
+        const sA = hubStations[currentIdx];
+        const sB = hubStations[nextIdx];
+        transitPacket.position.set(
+          THREE.MathUtils.lerp(sA.x, sB.x, subT),
+          THREE.MathUtils.lerp(sA.y, sB.y, subT),
+          THREE.MathUtils.lerp(sA.z, sB.z, subT)
+        );
+      }
+
+      // 7. FINAL MONOLITH CORE (Section 5)
+      const ctaWeight = Math.max(0, 1 - Math.abs(u - 4.0) / 0.9);
+      monolithCore.visible = ctaWeight > 0.01;
+      alignRing.visible = ctaWeight > 0.01;
+      if (monolithCore.visible) {
+        monolithCore.rotation.y = elapsed * 0.12;
+        monolithCore.rotation.x = Math.sin(elapsed * 0.08) * 0.2;
+        alignRing.rotation.z += 0.006;
+        alignRing.rotation.y += 0.003;
+        monolithMat.opacity = 0.8 * ctaWeight;
+        alignRingMat.opacity = 0.5 * ctaWeight;
+
+        // Subtle living pulse
+        const ctaPulse = 1.0 + Math.sin(elapsed * 1.8) * 0.04;
+        monolithCore.scale.set(ctaPulse, ctaPulse, ctaPulse);
+      }
 
       renderer.render(scene, camera);
     };
@@ -867,9 +809,7 @@ export const VantixioWorld: React.FC<VantixioWorldProps> = ({
   }, []);
 
   if (!webglSupported) {
-    return (
-      <div className="fixed inset-0 z-0 bg-[#070A12] pointer-events-none" />
-    );
+    return <div className="fixed inset-0 z-0 bg-[#070A12] pointer-events-none" />;
   }
 
   return (

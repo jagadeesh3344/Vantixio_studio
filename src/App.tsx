@@ -9,35 +9,34 @@ import { CustomCursor } from './components/ui/CustomCursor';
 import { CinematicLoader } from './components/ui/CinematicLoader';
 import { Navbar } from './components/ui/Navbar';
 import { HeroSection } from './components/sections/HeroSection';
-import { CorePropositionSection } from './components/sections/CorePropositionSection';
-import { CapabilitiesSection } from './components/sections/CapabilitiesSection';
-import { VantixioStandardSection } from './components/sections/VantixioStandardSection';
-import { TransformationSection } from './components/sections/TransformationSection';
-import { ClientWorldsSection } from './components/sections/ClientWorldsSection';
-import { ConvergenceSection } from './components/sections/ConvergenceSection';
+import { IdeaSection } from './components/sections/IdeaSection';
+import { WhatWeBuildSection } from './components/sections/WhatWeBuildSection';
+import { SelectedWorkSection } from './components/sections/SelectedWorkSection';
+import { FinalCTASection } from './components/sections/FinalCTASection';
 import { Footer } from './components/sections/Footer';
 import { StoryModal } from './components/modals/StoryModal';
 import { ContactModal } from './components/modals/ContactModal';
 
-// Exactly 7 Major Scroll Worlds
+// Exactly 5 Major Scroll Experiences:
+// 1. HERO
+// 2. THE VANTIXIO IDEA
+// 3. WHAT WE BUILD
+// 4. SELECTED WORK
+// 5. FINAL CTA
 const WORLD_ANCHORS = [
-  'hero',           // 0: Hero Opening (Software. Built Around You.)
-  'problem',        // 1: The Problem (Forces You to Adapt vs. Flips the Model)
-  'capabilities',   // 2: What Vantixio Builds (Capabilities + Practical Tech Philosophy)
-  'architecture',   // 3: Vantixio Architecture (5 Pillars + 6-Stage Process)
-  'work',           // 4: Proven Impact (Ashtonava & YesDhobi)
-  'transformation', // 5: The Transformation Event (Dimensional World Morph: Complexity In, Engineered Clarity Out)
-  'contact',        // 6: Convergence (Client Profiles, 5 Craftsmanship Principles & Final Manifesto)
+  'hero',         // 0: Hero (Software. Built Around You.)
+  'idea',         // 1: The Vantixio Idea (Forces You to Adapt vs. Flips the Model)
+  'capabilities', // 2: What We Build (4 Core Functional Branches)
+  'work',         // 3: Selected Work (Ashtonava Luxury & YesDhobi Logistics)
+  'contact',      // 4: Final CTA (Let's Build Software That Fits)
 ];
 
 const WORLD_NAMES: WorldSection[] = [
   'hero',
-  'problem',
+  'idea',
   'capabilities',
-  'architecture',
   'work',
-  'transformation',
-  'convergence',
+  'cta',
 ];
 
 export default function App() {
@@ -46,12 +45,13 @@ export default function App() {
   const [storyModalOpen, setStoryModalOpen] = useState(false);
   const [contactPrefill, setContactPrefill] = useState<string | undefined>(undefined);
 
-  // Persistent WebGL World State (Continuous Floating Journey across 7 Worlds)
+  // Persistent WebGL World State (Continuous Floating Journey across 5 Experiences)
   const [activeWorld, setActiveWorld] = useState<WorldSection>('hero');
   const [continuousProgress, setContinuousProgress] = useState(0);
   const [sectionProgress, setSectionProgress] = useState(0);
   const [globalScrollProgress, setGlobalScrollProgress] = useState(0);
   const [activeCapability, setActiveCapability] = useState<string | null>(null);
+  const [activeWorkProject, setActiveWorkProject] = useState<'ashtonava' | 'yesdhobi'>('ashtonava');
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [loaderComplete, setLoaderComplete] = useState(false);
@@ -65,7 +65,7 @@ export default function App() {
     return () => media.removeEventListener('change', handler);
   }, []);
 
-  // Continuous Section Tracking for Single Persistent WebGL Journey
+  // Continuous Section Tracking across 5 Major Worlds
   useEffect(() => {
     let ticking = false;
 
@@ -85,7 +85,7 @@ export default function App() {
               const rect = el.getBoundingClientRect();
               centers.push(rect.top + scrollY + rect.height * 0.45);
             } else {
-              centers.push((i / (WORLD_ANCHORS.length - 1)) * (docHeight || 5000));
+              centers.push((i / (WORLD_ANCHORS.length - 1)) * (docHeight || 4000));
             }
           }
 
@@ -109,7 +109,7 @@ export default function App() {
 
           setContinuousProgress(prog);
 
-          const worldIdx = Math.max(0, Math.min(Math.floor(prog + 0.4), WORLD_NAMES.length - 1));
+          const worldIdx = Math.max(0, Math.min(Math.floor(prog + 0.45), WORLD_NAMES.length - 1));
           setActiveWorld(WORLD_NAMES[worldIdx]);
           setSectionProgress(prog % 1);
 
@@ -142,33 +142,34 @@ export default function App() {
   return (
     <div className={`min-h-screen text-slate-100 selection:bg-[#FF5722] selection:text-white relative font-sans ${blueprintMode ? 'blueprint-active' : ''}`}>
       
-      {/* 00. Cinematic Introductory Entrance */}
+      {/* 00. Cinematic Entrance Loader */}
       {!loaderComplete && (
         <CinematicLoader onComplete={() => setLoaderComplete(true)} />
       )}
 
-      {/* 00. Subtle Custom Cursor (Desktop Only) */}
+      {/* 00. Custom Cursor */}
       <CustomCursor />
 
-      {/* 00. Persistent Single-Canvas WebGL World (Continuous Floating World) */}
+      {/* 00. Persistent Single-Canvas WebGL World (One Continuous Spatial Environment) */}
       <VantixioWorld
         activeSection={activeWorld}
         continuousProgress={continuousProgress}
         sectionProgress={sectionProgress}
         globalScrollProgress={globalScrollProgress}
         activeCapability={activeCapability}
+        activeWorkProject={activeWorkProject}
         formSubmitted={formSubmitted}
         reducedMotion={reducedMotion}
       />
 
-      {/* Blueprint Grid Technical Overlay if active */}
+      {/* Blueprint Grid Technical Overlay if toggled */}
       {blueprintMode && (
         <div className="fixed inset-0 z-40 pointer-events-none border-[12px] border-cyan-500/20">
           <div className="absolute top-2 left-4 text-[10px] font-mono text-cyan-400 bg-black/80 px-2 py-0.5 rounded border border-cyan-500/40">
-            SYSTEM BLUEPRINT OVERLAY // ACTIVE GRID MATRIX 40px
+            SYSTEM BLUEPRINT OVERLAY // CONTINUOUS SPATIAL PIPELINE
           </div>
           <div className="absolute bottom-2 right-4 text-[10px] font-mono text-cyan-400 bg-black/80 px-2 py-0.5 rounded border border-cyan-500/40">
-            RESOLUTION: DETERMINISTIC // ZERO RIGID SAAS
+            VANTIXIO ARCHITECTURE // ZERO OFF-THE-SHELF RIGIDITY
           </div>
         </div>
       )}
@@ -177,42 +178,40 @@ export default function App() {
       <Navbar
         blueprintMode={blueprintMode}
         onToggleBlueprint={() => setBlueprintMode(!blueprintMode)}
-        onOpenContact={() => handleOpenContact()}
+        onOpenContact={() => handleOpenContact('Navbar CTA')}
       />
 
-      {/* Main Experience Stream - 7 Major Continuous Scroll Worlds */}
+      {/* Main Experience Stream - Exactly 5 Major Experiences */}
       <main className="relative z-10">
         
-        {/* WORLD 01: HERO — Software. Built Around You. */}
+        {/* 1. HERO — Software. Built Around You. */}
         <HeroSection
-          onOpenContact={() => handleOpenContact('General Custom Build')}
+          onOpenContact={() => handleOpenContact('Custom Build Initial')}
           onOpenStory={() => setStoryModalOpen(true)}
         />
 
-        {/* WORLD 02: THE PROBLEM — Most Software Forces You to Adapt. Vantixio Flips the Model. */}
-        <CorePropositionSection />
+        {/* 2. THE VANTIXIO IDEA — Most Software Forces You to Adapt. Vantixio Flips the Model. */}
+        <IdeaSection
+          onOpenContact={() => handleOpenContact('The Vantixio Model')}
+        />
 
-        {/* WORLD 03: WHAT VANTIXIO BUILDS — Capabilities & Practical Technology Outcomes */}
-        <CapabilitiesSection
+        {/* 3. WHAT WE BUILD — 4 Core Functional Branches */}
+        <WhatWeBuildSection
           onOpenContact={(cap) => handleOpenContact(cap)}
           onHoverCapability={(capId) => setActiveCapability(capId)}
         />
 
-        {/* WORLD 04: THE VANTIXIO ARCHITECTURE — 5 Pillars & 6-Stage Deliberate Engineering Process */}
-        <VantixioStandardSection />
-
-        {/* WORLD 05: PROVEN IMPACT — Ashtonava & YesDhobi */}
-        <ClientWorldsSection
-          onOpenContact={(project) => handleOpenContact(project)}
+        {/* 4. SELECTED WORK — Ashtonava Luxury & YesDhobi Logistics */}
+        <SelectedWorkSection
+          activeProject={activeWorkProject}
+          onSelectProject={(proj) => setActiveWorkProject(proj)}
+          onOpenContact={(proj) => handleOpenContact(proj)}
         />
 
-        {/* WORLD 06: THE TRANSFORMATION EVENT — Gravitational Singularity (Complexity In, Structured Clarity Out) */}
-        <TransformationSection onOpenContact={() => handleOpenContact('Operational Transformation')} />
-
-        {/* WORLD 07: CONVERGENCE — Client Profiles, 5 Engineering Principles & Final Manifesto / Contact */}
-        <ConvergenceSection
+        {/* 5. FINAL CTA — Let's Build Software That Fits. */}
+        <FinalCTASection
           initialCategory={contactPrefill}
-          onOpenContactModal={() => handleOpenContact()}
+          onOpenContactModal={() => handleOpenContact('Final CTA Button')}
           onFormSubmitted={() => setFormSubmitted(true)}
         />
       </main>

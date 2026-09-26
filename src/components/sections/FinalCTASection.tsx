@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, Send, CheckCircle2, Sparkles, ShieldCheck, Clock, Calendar, Phone, Building2, User, HelpCircle } from 'lucide-react';
+import { ArrowRight, CheckCircle2 } from 'lucide-react';
 
 interface FinalCTASectionProps {
   initialCategory?: string;
@@ -8,20 +8,14 @@ interface FinalCTASectionProps {
   onFormSubmitted?: () => void;
 }
 
-export const FinalCTASection: React.FC<FinalCTASectionProps> = ({ 
-  initialCategory, 
+export const FinalCTASection: React.FC<FinalCTASectionProps> = ({
+  initialCategory,
   onOpenContactModal,
-  onFormSubmitted 
+  onFormSubmitted,
 }) => {
   const [name, setName] = useState('');
-  const [company, setCompany] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [selectedType, setSelectedType] = useState(initialCategory || 'Web Platform');
-  const [selectedTimeline, setSelectedTimeline] = useState('4-8 weeks');
-  const [notes, setNotes] = useState('');
-  const [meetingDate, setMeetingDate] = useState('');
-  const [meetingTime, setMeetingTime] = useState('10:00 AM EST');
+  const [problemDescription, setProblemDescription] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -34,276 +28,133 @@ export const FinalCTASection: React.FC<FinalCTASectionProps> = ({
   };
 
   return (
-    <section id="contact" className="relative py-24 md:py-36 border-t border-slate-800/80 bg-transparent overflow-hidden">
-      {/* Background radiant ambient convergence light */}
-      <div className="absolute bottom-0 right-1/4 w-[600px] h-[400px] bg-[#FF5722]/15 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute top-0 left-1/4 w-[500px] h-[400px] bg-cyan-500/15 rounded-full blur-[140px] pointer-events-none" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+    <section id="contact" className="relative min-h-[90vh] flex flex-col justify-center py-20 md:py-28 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         
-        {/* Main Grid: Left Call to Action + Right Architectural Interactive Scope Configurator */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          
-          {/* Left Column: Architectural Statement & Direct Actions */}
-          <div className="lg:col-span-5 lg:sticky lg:top-28">
-            <div className="inline-flex items-center space-x-2 text-xs font-mono font-semibold tracking-widest uppercase text-[#FF5722] mb-4">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF5722] animate-ping" />
-              <span>CHAPTER 08 // CONVERGENCE</span>
-            </div>
+        {/* Top Minimal Eyebrow */}
+        <div className="inline-flex items-center space-x-2 text-xs font-mono font-semibold tracking-[0.2em] uppercase text-[#FF5722] mb-6">
+          <span className="w-1.5 h-1.5 bg-[#FF5722]" />
+          <span>05 // THE FINISHED SYSTEM</span>
+        </div>
 
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-display text-white tracking-tight leading-[1.08]">
+        {/* Main Grid: Left Core Statement & Right Direct Fast Conversation Intake */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          
+          {/* Left Column: Pure Open Typography */}
+          <div className="lg:col-span-7 space-y-6 relative z-10">
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-display font-light text-white tracking-tight leading-[1.06] drop-shadow-[0_4px_16px_rgba(0,0,0,0.85)]">
               What would you build <br />
               <span className="font-serif italic font-normal text-slate-100">if software had</span> <br />
-              <span className="text-[#FF5722] relative inline-block font-display">
-                no limits?
-                <span className="absolute -bottom-1 left-0 right-0 h-1.5 bg-[#FF5722]/40 rounded-full" />
-              </span>
+              <span className="text-[#FF5722] font-display font-bold">no limits?</span>
             </h2>
 
-            <p className="mt-6 text-xl sm:text-2xl text-white font-heading font-semibold">
-              “You bring the problem. We build the answer.”
+            <p className="text-xl sm:text-2xl text-slate-200 font-display font-light max-w-lg leading-snug drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]">
+              You bring the problem. <br />
+              <span className="text-cyan-400 font-medium">We build the answer.</span>
             </p>
 
-            <div className="mt-4 space-y-1 text-sm font-mono text-cyan-300/90">
-              <div>Not a template.</div>
-              <div>Not a compromise.</div>
-              <div>Not software you have to adapt yourself to.</div>
-            </div>
-
-            <p className="mt-4 text-sm text-slate-300 max-w-md leading-relaxed">
-              Tell us what your business needs. We'll figure out what the software should be.
-            </p>
-
-            <div className="mt-8 flex flex-wrap items-center gap-4">
+            <div className="pt-2">
               <button
                 onClick={onOpenContactModal}
-                className="inline-flex items-center space-x-3 px-8 py-4 rounded-full bg-[#FF5722] hover:bg-[#E64A19] text-white font-bold text-xs tracking-widest uppercase shadow-xl shadow-orange-600/30 hover:scale-105 active:scale-95 transition-all"
+                className="group inline-flex items-center space-x-2.5 px-9 py-4 rounded-full bg-[#FF5722] hover:bg-[#E64A19] text-white font-semibold text-xs font-mono tracking-wider uppercase shadow-xl shadow-orange-600/30 hover:scale-[1.02] active:scale-95 transition-all"
               >
-                <span>LET'S BUILD IT</span>
-                <ArrowRight className="w-4 h-4" />
+                <span>Start a Conversation</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </button>
-
-              <div className="flex items-center space-x-2 text-xs font-mono text-slate-400 px-4 py-2 rounded-full border border-slate-800 bg-slate-900/50">
-                <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                <span>NDA & Direct Partner Access</span>
-              </div>
             </div>
 
-            <div className="mt-10 pt-6 border-t border-slate-800/80 grid grid-cols-2 gap-4 text-xs font-mono text-slate-400">
-              <div>
-                <span className="text-white font-bold block mb-1">AVERAGE KICKOFF</span>
-                <span>Within 5 business days</span>
+            <div className="pt-4 flex items-center space-x-6 text-xs font-mono text-slate-400">
+              <div className="flex items-center space-x-2">
+                <span className="w-1.5 h-1.5 bg-emerald-400" />
+                <span>Senior software architects only</span>
               </div>
-              <div>
-                <span className="text-white font-bold block mb-1">CODE OWNERSHIP</span>
-                <span>100% Client IP Ownership</span>
+              <div className="flex items-center space-x-2">
+                <span className="w-1.5 h-1.5 bg-cyan-400" />
+                <span>Zero vendor lock-in</span>
               </div>
             </div>
           </div>
 
-          {/* Right Column: Full Interactive Scope & Meeting Booking Form */}
-          <div className="lg:col-span-7">
-            <div className="p-6 sm:p-8 border border-cyan-500/30 relative">
-              <div className="text-xs font-mono text-cyan-400 uppercase tracking-widest mb-1 flex items-center justify-between">
-                <span>CONVERGENCE INQUIRY & ARCHITECTURE BOOKING</span>
-                <span className="text-[10px] text-slate-500">SYSTEM v2.5</span>
-              </div>
-              <h3 className="text-2xl font-display font-bold text-white mb-6 drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-                Define Your Architecture & Meeting
-              </h3>
-
+          {/* Right Column: Direct Fast Intake */}
+          <div className="lg:col-span-5 relative z-10">
+            <div className="bg-slate-900/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-slate-800/80 shadow-2xl">
               {submitted ? (
-                <div className="p-8 border border-cyan-400/50 text-center space-y-4">
-                  <div className="w-14 h-14 rounded-full bg-cyan-500/20 text-cyan-300 flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="w-8 h-8 text-cyan-400" />
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="py-10 text-center space-y-3"
+                >
+                  <div className="w-12 h-12 rounded-full bg-emerald-950/80 border border-emerald-500/50 text-emerald-400 flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-6 h-6 stroke-[2]" />
                   </div>
-                  <h4 className="text-2xl font-display font-bold text-white">Discovery Blueprint Initiated</h4>
-                  <p className="text-xs text-slate-300 max-w-md mx-auto font-mono leading-relaxed">
-                    Thank you, <span className="text-white font-bold">{name || 'Partner'}</span>. We have scheduled your discovery session for <span className="text-cyan-300 font-bold">{meetingDate || 'upcoming week'} at {meetingTime}</span> for your <span className="text-[#FF5722] font-bold">{selectedType}</span>. Confirmation sent to <span className="text-white underline">{email}</span>.
+                  <h3 className="text-xl font-display font-bold text-white">
+                    Conversation Initialized
+                  </h3>
+                  <p className="text-xs text-slate-300 max-w-xs mx-auto font-sans">
+                    We received your notes and will reply directly from our engineering team within 24 hours.
                   </p>
-                  <button
-                    onClick={() => setSubmitted(false)}
-                    className="mt-4 px-6 py-2.5 rounded-full text-xs font-mono text-slate-300 hover:text-white border border-slate-700 hover:bg-slate-800 transition-colors"
-                  >
-                    Submit Another Inquiry
-                  </button>
-                </div>
+                  <div className="pt-2 text-[10px] font-mono text-cyan-400">
+                    DISPATCHED TO TEAM.VANTIXIOSTUDIO@GMAIL.COM
+                  </div>
+                </motion.div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  
-                  {/* Name & Work Email */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[11px] font-mono text-slate-300 uppercase mb-1">
-                        Name <span className="text-[#FF5722]">*</span>
-                      </label>
-                      <div className="relative">
-                        <User className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3" />
-                        <input
-                          type="text"
-                          required
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          placeholder="Devin Vance"
-                          className="w-full rounded-lg bg-black/50 border border-slate-700/60 pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors backdrop-blur-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-mono text-slate-300 uppercase mb-1">
-                        Work Email <span className="text-[#FF5722]">*</span>
-                      </label>
-                      <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="devin@enterprise.com"
-                        className="w-full rounded-lg bg-black/50 border border-slate-700/60 px-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors backdrop-blur-sm"
-                      />
-                    </div>
+                  <div className="text-[11px] font-mono text-cyan-400 uppercase tracking-widest font-semibold">
+                    DIRECT ARCHITECTURAL INTAKE
                   </div>
 
-                  {/* Company & Phone */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[11px] font-mono text-slate-300 uppercase mb-1">
-                        Company / Organization
-                      </label>
-                      <div className="relative">
-                        <Building2 className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3" />
-                        <input
-                          type="text"
-                          value={company}
-                          onChange={(e) => setCompany(e.target.value)}
-                          placeholder="Acme Global Inc"
-                          className="w-full rounded-lg bg-black/50 border border-slate-700/60 pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors backdrop-blur-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-mono text-slate-300 uppercase mb-1">
-                        Phone Number
-                      </label>
-                      <div className="relative">
-                        <Phone className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-3" />
-                        <input
-                          type="tel"
-                          value={phone}
-                          onChange={(e) => setPhone(e.target.value)}
-                          placeholder="+1 (555) 019-2834"
-                          className="w-full rounded-lg bg-black/50 border border-slate-700/60 pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors backdrop-blur-sm"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* What do you want to build? */}
                   <div>
-                    <label className="block text-[11px] font-mono text-slate-300 uppercase mb-2">
-                      What do you want to build? <span className="text-[#FF5722]">*</span>
+                    <label className="block text-xs font-mono text-slate-300 mb-1">
+                      Your Name
                     </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                      {['Web Platform', 'Mobile App', 'AI Copilot', 'ERP & Ops', 'API Sync', 'Bespoke Tool'].map((type) => (
-                        <button
-                          type="button"
-                          key={type}
-                          onClick={() => setSelectedType(type)}
-                          className={`p-2 rounded-lg border text-xs font-mono text-center transition-all ${
-                            selectedType === type
-                              ? 'bg-cyan-950/80 border-cyan-400 text-cyan-200 font-semibold shadow-lg shadow-cyan-950/50'
-                              : 'bg-black/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-                          }`}
-                        >
-                          {type}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Target Timeframe */}
-                  <div>
-                    <label className="block text-[11px] font-mono text-slate-300 uppercase mb-2">
-                      Target Timeframe
-                    </label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {['4-8 weeks', '8-16 weeks', 'Flexible'].map((time) => (
-                        <button
-                          type="button"
-                          key={time}
-                          onClick={() => setSelectedTimeline(time)}
-                          className={`p-1.5 rounded-lg border text-xs font-mono text-center transition-all ${
-                            selectedTimeline === time
-                              ? 'bg-[#FF5722]/25 border-[#FF5722] text-orange-200 font-semibold'
-                              : 'bg-black/40 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
-                          }`}
-                        >
-                          {time}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Project description */}
-                  <div>
-                    <label className="block text-[11px] font-mono text-slate-300 uppercase mb-1">
-                      Project description / Problem to solve <span className="text-[#FF5722]">*</span>
-                    </label>
-                    <textarea
-                      rows={2}
+                    <input
+                      type="text"
                       required
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Outline current friction, key workflows, or your target technical specs..."
-                      className="w-full rounded-lg bg-black/50 border border-slate-700/60 p-2.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-cyan-400 transition-colors backdrop-blur-sm"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Alex Rivera"
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/80 border border-slate-800 focus:border-cyan-400 focus:outline-none text-xs text-white placeholder-slate-500 font-sans transition-colors"
                     />
                   </div>
 
-                  {/* Meeting Date & Meeting Time */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 border-t border-slate-800/80">
-                    <div>
-                      <label className="block text-[11px] font-mono text-slate-300 uppercase mb-1">
-                        Preferred Meeting Date
-                      </label>
-                      <input
-                        type="date"
-                        value={meetingDate}
-                        onChange={(e) => setMeetingDate(e.target.value)}
-                        className="w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400 transition-colors"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[11px] font-mono text-slate-300 uppercase mb-1">
-                        Preferred Meeting Time
-                      </label>
-                      <select
-                        value={meetingTime}
-                        onChange={(e) => setMeetingTime(e.target.value)}
-                        className="w-full rounded-lg bg-slate-900 border border-slate-800 px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-cyan-400 transition-colors"
-                      >
-                        <option value="09:00 AM EST">09:00 AM EST</option>
-                        <option value="10:00 AM EST">10:00 AM EST</option>
-                        <option value="11:30 AM EST">11:30 AM EST</option>
-                        <option value="01:00 PM EST">01:00 PM EST</option>
-                        <option value="02:30 PM EST">02:30 PM EST</option>
-                        <option value="04:00 PM EST">04:00 PM EST</option>
-                      </select>
-                    </div>
+                  <div>
+                    <label className="block text-xs font-mono text-slate-300 mb-1">
+                      Work Email
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="alex@company.com"
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/80 border border-slate-800 focus:border-cyan-400 focus:outline-none text-xs text-white placeholder-slate-500 font-sans transition-colors"
+                    />
                   </div>
 
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    className="w-full mt-2 py-3.5 rounded-xl bg-gradient-to-r from-[#FF5722] to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold text-xs font-mono tracking-wider uppercase flex items-center justify-center space-x-2 shadow-lg shadow-orange-600/30 transition-all hover:scale-[1.01]"
-                  >
-                    <span>Confirm Architecture & Meeting Request</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
+                  <div>
+                    <label className="block text-xs font-mono text-slate-300 mb-1">
+                      What problem are you solving?
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={problemDescription}
+                      onChange={(e) => setProblemDescription(e.target.value)}
+                      placeholder="Tell us what you want to build or streamline..."
+                      className="w-full px-3.5 py-2.5 rounded-lg bg-slate-950/80 border border-slate-800 focus:border-cyan-400 focus:outline-none text-xs text-white placeholder-slate-500 font-sans transition-colors resize-none"
+                    />
+                  </div>
+
+                  <div className="pt-2">
+                    <button
+                      type="submit"
+                      className="w-full py-3 rounded-lg bg-[#FF5722] hover:bg-[#E64A19] text-white font-mono text-xs uppercase tracking-wider font-semibold shadow-md shadow-orange-600/30 transition-all flex items-center justify-center space-x-2"
+                    >
+                      <span>Start a Conversation</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </form>
               )}
-
             </div>
           </div>
 
